@@ -10,16 +10,22 @@ public:
 class TestImplementation : public ITestInterface
 {};
 
+class TestImplementation2 : public ITestInterface
+{};
+
+class TestImplementation3 : public ITestInterface
+{};
+
 class ITestInterface2
 {
 public:
     virtual ~ITestInterface2() = default;
 };
 
-class TestImplementation2 : public ITestInterface2
+class Interface2Implementation : public ITestInterface2
 {
 public:
-    explicit TestImplementation2(
+    explicit Interface2Implementation(
         std::shared_ptr<ITestInterface> dependency)
     {
         if (dependency == nullptr)
@@ -49,11 +55,57 @@ TEST(DIContainerTests, ResolveRegisteredDependency_ReturnsInstance)
 TEST(DIContainerTests, RegisteredSameDependencyTwice_ThrowsDuplicateDependencyException)
 {
     DIContainer resolver;
-    resolver.registerType<ITestInterface>(
-        [](DIContainer &r) { return std::make_shared<TestImplementation>(); });
+
+    auto creator = [](DIContainer &r) { return std::make_shared<TestImplementation>(); };
+
+    resolver.registerType<ITestInterface>(creator);
     ASSERT_THROW(
-        resolver.registerType<ITestInterface>(
-        [](DIContainer &r) { return std::make_shared<TestImplementation>(); }),
+        resolver.registerType<ITestInterface>(creator),
+        DuplicateDependencyException
+        );
+}
+
+TEST(DIContainerTests, RegisteredNamedAndUnnamedDependency_Succeeds)
+{
+    DIContainer resolver;
+
+    auto creator = [](DIContainer &r) { return std::make_shared<TestImplementation>(); };
+
+    resolver.registerType<ITestInterface>(creator);
+    resolver.registerType<ITestInterface>("name1", creator);
+    resolver.registerType<ITestInterface>("name2", creator);
+}
+
+TEST(DIContainerTests, ResolveNamedAndUnnamedTypes_InstanciateCorrectly)
+{
+    DIContainer resolver;
+
+    auto creator = [](DIContainer &r) { return std::make_shared<TestImplementation>(); };
+    auto creator2 = [](DIContainer &r) { return std::make_shared<TestImplementation2>(); };
+    auto creator3 = [](DIContainer &r) { return std::make_shared<TestImplementation3>(); };
+
+    resolver.registerType<ITestInterface>(creator);
+    resolver.registerType<ITestInterface>("name2", creator2);
+    resolver.registerType<ITestInterface>("name3", creator3);
+
+    auto obj = std::dynamic_pointer_cast<TestImplementation>(resolver.resolve<ITestInterface>());
+    auto obj2 = std::dynamic_pointer_cast<TestImplementation2>(resolver.resolve<ITestInterface>("name2"));
+    auto obj3 = std::dynamic_pointer_cast<TestImplementation3>(resolver.resolve<ITestInterface>("name3"));
+
+    ASSERT_NE(obj, nullptr);
+    ASSERT_NE(obj2, nullptr);
+    ASSERT_NE(obj3, nullptr);
+}
+
+TEST(DIContainerTests, RegisterDependencyWithSameNameAndType_ThrowsDuplicateDependencyException)
+{
+    DIContainer resolver;
+
+    auto creator = [](DIContainer &r) { return std::make_shared<TestImplementation>(); };
+
+    resolver.registerType<ITestInterface>("name", creator);
+    ASSERT_THROW(
+        resolver.registerType<ITestInterface>("name", creator),
         DuplicateDependencyException
         );
 }
@@ -79,7 +131,7 @@ TEST(DIContainerTests, ResolveImplementationWithDependency_Succeeds)
     );
 
     resolver.registerType<ITestInterface2>([](DIContainer &r) {
-        return std::make_shared<TestImplementation2>(
+        return std::make_shared<Interface2Implementation>(
             r.resolve<ITestInterface>());
     }
     );
