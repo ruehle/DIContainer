@@ -47,10 +47,10 @@ public:
         return std::static_pointer_cast<T>(creatorIter->second(*this));
     }
 
-    class RegisterHelper
+    class RegistrationHelper
     {
     public:
-        explicit RegisterHelper(DIContainer &container, std::function<std::shared_ptr<void>(DIContainer &) > creator)
+        explicit RegistrationHelper(DIContainer &container, std::function<std::shared_ptr<void>(DIContainer &) > creator)
             : container(container), creator(creator) {}
 
         template<class T>
@@ -70,30 +70,30 @@ public:
     };
 
     template<class T>
-    RegisterHelper registerType()
+    RegistrationHelper registerType()
     {
-        return RegisterHelper(
+        return RegistrationHelper(
             *this, [](DIContainer &r) { return std::make_shared<T>(); });
     }
 
     template<class T>
-    RegisterHelper registerType(std::function< std::shared_ptr<T>(DIContainer &)> creator)
+    RegistrationHelper registerType(std::function< std::shared_ptr<T>(DIContainer &)> creator)
     {
-        return RegisterHelper(
+        return RegistrationHelper(
             *this, creator);
     }
 
     template<class T, class... Args>
-    RegisterHelper registerType( Injector<Args...> injector )
+    RegistrationHelper registerType( Injector<Args...> injector )
     {
-        return RegisterHelper(
+        return RegistrationHelper(
             *this, [injector](DIContainer &r) { return injector.template create<T>(r); });
     }
 
     template<class T>
-    RegisterHelper registerInstance(std::shared_ptr<T> instance)
+    RegistrationHelper registerInstance(std::shared_ptr<T> instance)
     {
-        return RegisterHelper(
+        return RegistrationHelper(
             *this, [instance](DIContainer &r) { return instance; });
     }
 
@@ -130,5 +130,5 @@ private:
         std::function < std::shared_ptr<void>(DIContainer &) >
     > namedDependencies;
 
-    friend class RegisterHelper;
+    friend class RegistrationHelper;
 };
