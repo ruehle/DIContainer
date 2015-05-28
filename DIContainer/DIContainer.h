@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <typeindex>
 #include <map>
+#include "Injector.h"
 
 class UnresolvedDependencyException : public std::logic_error
 {
@@ -81,6 +82,14 @@ public:
         return RegisterHelper(
             *this, creator);
     }
+
+    template<class T, class... Args>
+    RegisterHelper registerType( Injector<Args...> injector )
+    {
+        return RegisterHelper(
+            *this, [injector](DIContainer &r) { return injector.template create<T>(r); });
+    }
+
 
 private:
 

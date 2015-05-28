@@ -8,9 +8,8 @@ class Injector
 {
 public:
     template<class T>
-    static std::shared_ptr<T> create(DIContainer &r)
+    std::shared_ptr<T> create(DIContainer &r) const
     {
         return std::make_shared<T>(r.resolve<Args...>());
     }
-
 };

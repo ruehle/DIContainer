@@ -71,13 +71,13 @@ TEST(DIContainerTests, RegisteredNamedAndUnnamedDependency_Succeeds)
 
     resolver.registerType<TestImplementation>()
         .as<ITestInterface>();
-    
+
     resolver.registerType<TestImplementation2>()
         .named<ITestInterface>("name2");
-    
+
     resolver.registerType<TestImplementation3>()
         .named<ITestInterface>("name3");
-    
+
 }
 
 TEST(DIContainerTests, ResolveNamedAndUnnamedTypes_InstanciateCorrectly)
@@ -136,10 +136,27 @@ TEST(DIContainerTests, ResolveImplementationWithDependencyByCode_Succeeds)
         .as<ITestInterface>();
 
     auto create = [](DIContainer &r){
-        return Injector<ITestInterface>::create<Interface2Implementation>(r); };
+        return std::make_shared<Interface2Implementation>(
+            r.resolve<ITestInterface>()
+            ); };
 
     resolver.registerType<Interface2Implementation>(create)
         .as<ITestInterface2>();
+
+
+    auto obj = resolver.resolve< ITestInterface2 >();
+    ASSERT_NE(obj, nullptr);
+}
+
+TEST(DIContainerTests, ResolveImplementationWithDependency_Succeeds)
+{
+    DIContainer resolver;
+    resolver.registerType<TestImplementation>()
+        .as<ITestInterface>();
+    {
+    resolver.registerType<Interface2Implementation>(Injector<ITestInterface>())
+        .as<ITestInterface2>();
+    }
 
 
     auto obj = resolver.resolve< ITestInterface2 >();
