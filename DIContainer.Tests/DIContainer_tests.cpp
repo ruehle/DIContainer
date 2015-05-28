@@ -67,8 +67,6 @@ TEST(DIContainerTests, RegisteredNamedAndUnnamedDependency_Succeeds)
 {
     DIContainer resolver;
 
-    auto creator = [](DIContainer &r) { return std::make_shared<TestImplementation>(); };
-
     resolver.registerType<TestImplementation>()
         .as<ITestInterface>();
 
@@ -106,10 +104,9 @@ TEST(DIContainerTests, RegisterDependencyWithSameNameAndType_ThrowsDuplicateDepe
 {
     DIContainer resolver;
 
-    auto creator = [](DIContainer &r) { return std::make_shared<TestImplementation>(); };
-
     resolver.registerType<TestImplementation>()
         .named<ITestInterface>("name");
+
     ASSERT_THROW(
         resolver.registerType<TestImplementation>()
         .named<ITestInterface>("name"),
