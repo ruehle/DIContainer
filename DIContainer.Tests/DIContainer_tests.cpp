@@ -4,37 +4,39 @@
 
 using namespace DIContainer;
 
-class IService
-{
-public:
-    virtual ~IService() = default;
-};
-
-class ServiceImplementation : public IService
-{};
-
-class ServiceImplementation2 : public IService
-{};
-
-class ServiceImplementation3 : public IService
-{};
-
-class IAnotherService
-{
-public:
-    virtual ~IAnotherService() = default;
-};
-
-class DependentServiceImplementation : public IAnotherService
-{
-public:
-    explicit DependentServiceImplementation(
-        std::shared_ptr<IService> dependency)
+namespace {
+    class IService
     {
-        if (dependency == nullptr)
-            throw std::logic_error("invalid argument");
-    }
-};
+    public:
+        virtual ~IService() = default;
+    };
+
+    class ServiceImplementation : public IService
+    {};
+
+    class ServiceImplementation2 : public IService
+    {};
+
+    class ServiceImplementation3 : public IService
+    {};
+
+    class IAnotherService
+    {
+    public:
+        virtual ~IAnotherService() = default;
+    };
+
+    class DependentServiceImplementation : public IAnotherService
+    {
+    public:
+        explicit DependentServiceImplementation(
+            std::shared_ptr<IService> dependency)
+        {
+            if (dependency == nullptr)
+                throw std::logic_error("invalid argument");
+        }
+    };
+}
 
 TEST(DIContainerTests, ResolveUnregisteredDependency_TrowsUnresolvedDependencyException)
 {
