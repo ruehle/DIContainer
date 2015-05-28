@@ -55,11 +55,10 @@ TEST(DIContainerTests, RegisteredSameDependencyTwice_ThrowsDuplicateDependencyEx
 {
     DIContainer resolver;
 
-    auto creator = [](DIContainer &r) { return std::make_shared<TestImplementation>(); };
+    resolver.registerType<TestImplementation>().as<ITestInterface>();
 
-    resolver.wireInterface<ITestInterface>(creator);
     ASSERT_THROW(
-        resolver.wireInterface<ITestInterface>(creator),
+        resolver.registerType<TestImplementation>().as<ITestInterface>(),
         DuplicateDependencyException
         );
 }
@@ -70,22 +69,29 @@ TEST(DIContainerTests, RegisteredNamedAndUnnamedDependency_Succeeds)
 
     auto creator = [](DIContainer &r) { return std::make_shared<TestImplementation>(); };
 
-    resolver.wireInterface<ITestInterface>(creator);
-    resolver.wireInterface<ITestInterface>("name1", creator);
-    resolver.wireInterface<ITestInterface>("name2", creator);
+    resolver.registerType<TestImplementation>()
+        .as<ITestInterface>();
+    
+    resolver.registerType<TestImplementation2>()
+        .named<ITestInterface>("name2");
+    
+    resolver.registerType<TestImplementation3>()
+        .named<ITestInterface>("name3");
+    
 }
 
 TEST(DIContainerTests, ResolveNamedAndUnnamedTypes_InstanciateCorrectly)
 {
     DIContainer resolver;
 
-    auto creator = [](DIContainer &r) { return std::make_shared<TestImplementation>(); };
-    auto creator2 = [](DIContainer &r) { return std::make_shared<TestImplementation2>(); };
-    auto creator3 = [](DIContainer &r) { return std::make_shared<TestImplementation3>(); };
+    resolver.registerType<TestImplementation>()
+        .as<ITestInterface>();
 
-    resolver.wireInterface<ITestInterface>(creator);
-    resolver.wireInterface<ITestInterface>("name2", creator2);
-    resolver.wireInterface<ITestInterface>("name3", creator3);
+    resolver.registerType<TestImplementation2>()
+        .named<ITestInterface>("name2");
+
+    resolver.registerType<TestImplementation3>()
+        .named<ITestInterface>("name3");
 
     auto obj = std::dynamic_pointer_cast<TestImplementation>(resolver.resolve<ITestInterface>());
     auto obj2 = std::dynamic_pointer_cast<TestImplementation2>(resolver.resolve<ITestInterface>("name2"));
@@ -102,9 +108,11 @@ TEST(DIContainerTests, RegisterDependencyWithSameNameAndType_ThrowsDuplicateDepe
 
     auto creator = [](DIContainer &r) { return std::make_shared<TestImplementation>(); };
 
-    resolver.wireInterface<ITestInterface>("name", creator);
+    resolver.registerType<TestImplementation>()
+        .named<ITestInterface>("name");
     ASSERT_THROW(
-        resolver.wireInterface<ITestInterface>("name", creator),
+        resolver.registerType<TestImplementation>()
+        .named<ITestInterface>("name"),
         DuplicateDependencyException
         );
 }
@@ -112,9 +120,8 @@ TEST(DIContainerTests, RegisterDependencyWithSameNameAndType_ThrowsDuplicateDepe
 TEST(DIContainerTests, CallResolveTwice_ReturnsDifferentInstances)
 {
     DIContainer resolver;
-    resolver.wireInterface<ITestInterface>(
-        [](DIContainer &r) { return std::make_shared<TestImplementation>(); }
-    );
+    resolver.registerType<TestImplementation>()
+        .as<ITestInterface>();
 
     auto obj1 = resolver.resolve< ITestInterface >();
     auto obj2 = resolver.resolve< ITestInterface >();
@@ -122,17 +129,17 @@ TEST(DIContainerTests, CallResolveTwice_ReturnsDifferentInstances)
     ASSERT_NE(obj1, obj2);
 }
 
-TEST(DIContainerTests, ResolveImplementationWithDependency_Succeeds)
+TEST(DIContainerTests, ResolveImplementationWithDependencyByCode_Succeeds)
 {
     DIContainer resolver;
-    resolver.wireInterface<ITestInterface>(
-        [](DIContainer &r) { return std::make_shared<TestImplementation>(); }
-    );
+    resolver.registerType<TestImplementation>()
+        .as<ITestInterface>();
 
     auto create = [](DIContainer &r){
         return Injector<ITestInterface>::create<Interface2Implementation>(r); };
 
-    resolver.wireInterface<ITestInterface2>(create);
+    resolver.registerType<Interface2Implementation>(create)
+        .as<ITestInterface2>();
 
 
     auto obj = resolver.resolve< ITestInterface2 >();

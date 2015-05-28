@@ -45,14 +45,6 @@ public:
             throw UnresolvedDependencyException();
         return std::static_pointer_cast<T>(creatorIter->second(*this));
     }
-    
-    template<class T>
-    void wireInterface( std::function<std::shared_ptr<T>(DIContainer &)> creator )
-    {
-        if (dependencies.count(typeid(T)) > 0)
-            throw DuplicateDependencyException();
-        dependencies[typeid(T)] = creator;
-    }   
 
     class RegisterHelper
     {
@@ -64,6 +56,12 @@ public:
         void as()
         {
             container.wireInterfaceInternal<T>(creator);
+        }
+
+        template<class T>
+        void named(const std::string &name)
+        {
+            container.wireInterfaceInternal<T>(name, creator);
         }
 
         DIContainer &container;
@@ -78,13 +76,10 @@ public:
     }
 
     template<class T>
-    void wireInterface( const std::string &name, std::function<std::shared_ptr<T>(DIContainer &)> creator)
+    RegisterHelper registerType(std::function< std::shared_ptr<T>(DIContainer &)> creator)
     {
-        auto key = std::make_pair(name, std::type_index(typeid(T)));
-        if (namedDependencies.count(key) > 0)
-            throw DuplicateDependencyException();
-
-        namedDependencies[key] = creator;
+        return RegisterHelper(
+            *this, creator);
     }
 
 private:
@@ -96,6 +91,17 @@ private:
             throw DuplicateDependencyException();
         dependencies[typeid(T)] = creator;
     }
+
+    template<class T>
+    void wireInterfaceInternal(const std::string &name, std::function<std::shared_ptr<void>(DIContainer &)> creator)
+    {
+        auto key = std::make_pair(name, std::type_index(typeid(T)));
+        if (namedDependencies.count(key) > 0)
+            throw DuplicateDependencyException();
+
+        namedDependencies[key] = creator;
+    }
+
 
     std::unordered_map< 
         std::type_index, 
