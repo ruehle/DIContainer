@@ -1,15 +1,18 @@
 #pragma once
 #include <memory>
 
-class DIContainer;
-
-template<class... Args>
-class Injector
+namespace DIContainer
 {
-public:
-    template<class T>
-    std::shared_ptr<T> create(DIContainer &r) const
+    class Container;
+
+    template<class... Args>
+    class Injector
     {
-        return std::make_shared<T>(r.resolve<Args...>());
-    }
-};
+    public:
+        template<class T>
+        std::shared_ptr<T> create(Container &r) const
+        {
+            return std::make_shared<T>(r.resolve<Args...>());
+        }
+    };
+}

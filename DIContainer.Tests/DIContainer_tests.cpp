@@ -1,6 +1,8 @@
 #include "gtest/gtest.h"
-#include "../DIContainer/DIContainer.h"
+#include "../DIContainer/Container.h"
 #include "../DIContainer/Injector.h"
+
+using namespace DIContainer;
 
 class ITestInterface
 {
@@ -37,13 +39,13 @@ public:
 
 TEST(DIContainerTests, ResolveUnregisteredDependency_TrowsUnresolvedDependencyException)
 {
-    DIContainer resolver;
+    Container resolver;
     ASSERT_THROW(resolver.resolve<ITestInterface>(), UnresolvedDependencyException);
 }
 
 TEST(DIContainerTests, ResolveRegisteredDependency_ReturnsInstance)
 {
-    DIContainer resolver;
+    Container resolver;
     resolver.registerType<TestImplementation>().as<ITestInterface>();
 
     auto obj = resolver.resolve< ITestInterface >();
@@ -53,7 +55,7 @@ TEST(DIContainerTests, ResolveRegisteredDependency_ReturnsInstance)
 
 TEST(DIContainerTests, RegisteredSameDependencyTwice_ThrowsDuplicateDependencyException)
 {
-    DIContainer resolver;
+    Container resolver;
 
     resolver.registerType<TestImplementation>().as<ITestInterface>();
 
@@ -65,7 +67,7 @@ TEST(DIContainerTests, RegisteredSameDependencyTwice_ThrowsDuplicateDependencyEx
 
 TEST(DIContainerTests, RegisteredNamedAndUnnamedDependency_Succeeds)
 {
-    DIContainer resolver;
+    Container resolver;
 
     resolver.registerType<TestImplementation>()
         .as<ITestInterface>();
@@ -80,7 +82,7 @@ TEST(DIContainerTests, RegisteredNamedAndUnnamedDependency_Succeeds)
 
 TEST(DIContainerTests, ResolveNamedAndUnnamedTypes_InstanciateCorrectly)
 {
-    DIContainer resolver;
+    Container resolver;
 
     resolver.registerType<TestImplementation>()
         .as<ITestInterface>();
@@ -102,7 +104,7 @@ TEST(DIContainerTests, ResolveNamedAndUnnamedTypes_InstanciateCorrectly)
 
 TEST(DIContainerTests, RegisterDependencyWithSameNameAndType_ThrowsDuplicateDependencyException)
 {
-    DIContainer resolver;
+    Container resolver;
 
     resolver.registerType<TestImplementation>()
         .named<ITestInterface>("name");
@@ -116,7 +118,7 @@ TEST(DIContainerTests, RegisterDependencyWithSameNameAndType_ThrowsDuplicateDepe
 
 TEST(DIContainerTests, CallResolveTwice_ReturnsDifferentInstances)
 {
-    DIContainer resolver;
+    Container resolver;
     resolver.registerType<TestImplementation>()
         .as<ITestInterface>();
 
@@ -128,11 +130,11 @@ TEST(DIContainerTests, CallResolveTwice_ReturnsDifferentInstances)
 
 TEST(DIContainerTests, ResolveImplementationWithDependencyByCode_Succeeds)
 {
-    DIContainer resolver;
+    Container resolver;
     resolver.registerType<TestImplementation>()
         .as<ITestInterface>();
 
-    auto create = [](DIContainer &r){
+    auto create = [](Container &r){
         return std::make_shared<Interface2Implementation>(
             r.resolve<ITestInterface>()
             ); };
@@ -147,7 +149,7 @@ TEST(DIContainerTests, ResolveImplementationWithDependencyByCode_Succeeds)
 
 TEST(DIContainerTests, ResolveImplementationWithDependency_Succeeds)
 {
-    DIContainer resolver;
+    Container resolver;
 
     resolver.registerType<TestImplementation>()
         .as<ITestInterface>();
@@ -161,7 +163,7 @@ TEST(DIContainerTests, ResolveImplementationWithDependency_Succeeds)
 
 TEST(DIContainerTests, RegisterAndResolveInstance_ReturnsSameInstance)
 {
-    DIContainer resolver;
+    Container resolver;
 
     auto instance = std::make_shared<TestImplementation>();
 

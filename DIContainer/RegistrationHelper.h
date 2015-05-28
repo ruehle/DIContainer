@@ -1,34 +1,39 @@
 #pragma once
 
-class DIContainer;
-
-template<class ImplementationType>
-class RegistrationHelper
+namespace DIContainer
 {
-public:
-    explicit RegistrationHelper(DIContainer &container, std::function<std::shared_ptr<ImplementationType>(DIContainer &) > creator)
-        : container(container), creator(creator) {}
 
-    template<class InterfaceType>
-    void as()
+    class Container;
+
+    template<class ImplementationType>
+    class RegistrationHelper
     {
-        static_assert(
-            std::is_base_of<InterfaceType, ImplementationType>::value,
-            "Registered must implement interface");
+    public:
+        explicit RegistrationHelper(Container &container, std::function<std::shared_ptr<ImplementationType>(Container &) > creator)
+            : container(container), creator(creator) {}
 
-        container.wireInterfaceInternal<InterfaceType>(creator);
-    }
+        template<class InterfaceType>
+        void as()
+        {
+            static_assert(
+                std::is_base_of<InterfaceType, ImplementationType>::value,
+                "Registered must implement interface");
 
-    template<class InterfaceType>
-    void named(const std::string &name)
-    {
-        static_assert(
-            std::is_base_of<InterfaceType, ImplementationType>::value,
-            "Registered must implement interface");
+            container.wireInterfaceInternal<InterfaceType>(creator);
+        }
 
-        container.wireInterfaceInternal<InterfaceType>(name, creator);
-    }
+        template<class InterfaceType>
+        void named(const std::string &name)
+        {
+            static_assert(
+                std::is_base_of<InterfaceType, ImplementationType>::value,
+                "Registered must implement interface");
 
-    DIContainer &container;
-    std::function<std::shared_ptr<ImplementationType>(DIContainer &) > creator;
-};
+            container.wireInterfaceInternal<InterfaceType>(name, creator);
+        }
+
+        Container &container;
+        std::function<std::shared_ptr<ImplementationType>(Container &) > creator;
+    };
+
+}
