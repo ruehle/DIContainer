@@ -14,6 +14,14 @@ public:
     {}
 };
 
+class DuplicateDependencyException : public std::logic_error
+{
+public:
+    DuplicateDependencyException()
+        : std::logic_error("A dependency could not be resolved")
+    {}
+};
+
 class DIContainer
 {
 public:
@@ -30,6 +38,8 @@ public:
     template<class T>
     void registerType( std::function<std::shared_ptr<T>(DIContainer &)> creator )
     {
+        if (dependencies.count(typeid(T)) > 0)
+            throw DuplicateDependencyException();
         dependencies[typeid(T)] = creator;
     }    
 

@@ -19,22 +19,22 @@ public:
 class TestImplementation2 : public ITestInterface2
 {
 public:
-    explicit TestImplementation2( 
-        std::shared_ptr<ITestInterface> dependency )
+    explicit TestImplementation2(
+        std::shared_ptr<ITestInterface> dependency)
     {
         if (dependency == nullptr)
-            throw std::logic_error("argument is nullptr");        
-    }    
+            throw std::logic_error("argument is nullptr");
+    }
 };
 
 
-TEST(DIContainerTests, ResolveUnregisteredDependency_TrowsUnresolvedDependencyException )
+TEST(DIContainerTests, ResolveUnregisteredDependency_TrowsUnresolvedDependencyException)
 {
     DIContainer resolver;
     ASSERT_THROW(resolver.resolve<ITestInterface>(), UnresolvedDependencyException);
 }
 
-TEST(DIContainerTests, ResolveRegisteredDependency_ReturnsInstance )
+TEST(DIContainerTests, ResolveRegisteredDependency_ReturnsInstance)
 {
     DIContainer resolver;
     resolver.registerType<ITestInterface>(
@@ -43,10 +43,22 @@ TEST(DIContainerTests, ResolveRegisteredDependency_ReturnsInstance )
 
     auto obj = resolver.resolve< ITestInterface >();
     auto objCasted = std::dynamic_pointer_cast<TestImplementation>(obj);
-    ASSERT_NE( objCasted, nullptr );
+    ASSERT_NE(objCasted, nullptr);
 }
 
-TEST(DIContainerTests, CallResolveTwice_ReturnsDifferentInstances )
+TEST(DIContainerTests, RegisteredSameDependencyTwice_ThrowsDuplicateDependencyException)
+{
+    DIContainer resolver;
+    resolver.registerType<ITestInterface>(
+        [](DIContainer &r) { return std::make_shared<TestImplementation>(); });
+    ASSERT_THROW(
+        resolver.registerType<ITestInterface>(
+        [](DIContainer &r) { return std::make_shared<TestImplementation>(); }),
+        DuplicateDependencyException
+        );
+}
+
+TEST(DIContainerTests, CallResolveTwice_ReturnsDifferentInstances)
 {
     DIContainer resolver;
     resolver.registerType<ITestInterface>(
@@ -66,9 +78,9 @@ TEST(DIContainerTests, ResolveImplementationWithDependency_Succeeds)
         [](DIContainer &r) { return std::make_shared<TestImplementation>(); }
     );
 
-    resolver.registerType<ITestInterface2>( [](DIContainer &r) { 
+    resolver.registerType<ITestInterface2>([](DIContainer &r) {
         return std::make_shared<TestImplementation2>(
-            r.resolve<ITestInterface>() ); 
+            r.resolve<ITestInterface>());
     }
     );
 
