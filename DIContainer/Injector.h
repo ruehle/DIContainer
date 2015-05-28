@@ -3,11 +3,12 @@
 
 class DIContainer;
 
-template<class T, class... Args>
-class AutoConstruct
+template<class... Args>
+class Injector
 {
 public:
-    std::shared_ptr<T> operator()(DIContainer &r)
+    template<class T>
+    static std::shared_ptr<T> create(DIContainer &r)
     {
         return std::make_shared<T>(r.resolve<Args...>());
     }

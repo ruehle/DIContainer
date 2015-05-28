@@ -18,7 +18,7 @@
     <ClInclude Include="DIContainer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AutoConstruct.h">
+    <ClInclude Include="Injector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
