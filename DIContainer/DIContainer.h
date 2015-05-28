@@ -45,17 +45,40 @@ public:
             throw UnresolvedDependencyException();
         return std::static_pointer_cast<T>(creatorIter->second(*this));
     }
-
+    
     template<class T>
-    void registerType( std::function<std::shared_ptr<T>(DIContainer &)> creator )
+    void wireInterface( std::function<std::shared_ptr<T>(DIContainer &)> creator )
     {
         if (dependencies.count(typeid(T)) > 0)
             throw DuplicateDependencyException();
         dependencies[typeid(T)] = creator;
     }   
 
+    class RegisterHelper
+    {
+    public:
+        explicit RegisterHelper(DIContainer &container, std::function<std::shared_ptr<void>(DIContainer &) > creator)
+            : container(container), creator(creator) {}
+
+        template<class T>
+        void as()
+        {
+            container.wireInterfaceInternal<T>(creator);
+        }
+
+        DIContainer &container;
+        std::function<std::shared_ptr<void>(DIContainer &) > creator;        
+    };
+
     template<class T>
-    void registerType( const std::string &name, std::function<std::shared_ptr<T>(DIContainer &)> creator)
+    RegisterHelper registerType()
+    {
+        return RegisterHelper(
+            *this, [](DIContainer &r) { return std::make_shared<T>(); });
+    }
+
+    template<class T>
+    void wireInterface( const std::string &name, std::function<std::shared_ptr<T>(DIContainer &)> creator)
     {
         auto key = std::make_pair(name, std::type_index(typeid(T)));
         if (namedDependencies.count(key) > 0)
@@ -65,6 +88,15 @@ public:
     }
 
 private:
+
+    template<class T>
+    void wireInterfaceInternal(std::function<std::shared_ptr<void>(DIContainer &)> creator)
+    {
+        if (dependencies.count(typeid(T)) > 0)
+            throw DuplicateDependencyException();
+        dependencies[typeid(T)] = creator;
+    }
+
     std::unordered_map< 
         std::type_index, 
         std::function<std::shared_ptr<void>(DIContainer &) > 
@@ -74,4 +106,6 @@ private:
         std::pair<std::string, std::type_index>,
         std::function < std::shared_ptr<void>(DIContainer &) >
     > namedDependencies;
+
+    friend class RegisterHelper;
 };
