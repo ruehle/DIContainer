@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "../DIContainer/DIContainer.h"
+#include "../DIContainer/AutoConstruct.h"
 
 class ITestInterface
 {
@@ -130,11 +131,10 @@ TEST(DIContainerTests, ResolveImplementationWithDependency_Succeeds)
         [](DIContainer &r) { return std::make_shared<TestImplementation>(); }
     );
 
-    resolver.registerType<ITestInterface2>([](DIContainer &r) {
-        return std::make_shared<Interface2Implementation>(
-            r.resolve<ITestInterface>());
-    }
-    );
+    resolver.registerType<ITestInterface2>(
+        AutoConstruct<Interface2Implementation, ITestInterface>()
+        );
+    
 
     auto obj = resolver.resolve< ITestInterface2 >();
     ASSERT_NE(obj, nullptr);
