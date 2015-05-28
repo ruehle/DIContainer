@@ -21,5 +21,8 @@
     <ClInclude Include="Injector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RegistrationHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

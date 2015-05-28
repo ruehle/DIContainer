@@ -7,6 +7,7 @@
 #include <typeindex>
 #include <map>
 #include "Injector.h"
+#include "RegistrationHelper.h"
 
 class UnresolvedDependencyException : public std::logic_error
 {
@@ -47,37 +48,6 @@ public:
         return std::static_pointer_cast<T>(creatorIter->second(*this));
     }
 
-    template<class ImplementationType>
-    class RegistrationHelper
-    {
-    public:
-        explicit RegistrationHelper(DIContainer &container, std::function<std::shared_ptr<ImplementationType>(DIContainer &) > creator)
-            : container(container), creator(creator) {}
-
-        template<class InterfaceType>
-        void as()
-        {
-            static_assert( 
-                std::is_base_of<InterfaceType, ImplementationType>::value,
-                "Registered must implement interface");
-
-            container.wireInterfaceInternal<InterfaceType>(creator);
-        }
-
-        template<class InterfaceType>
-        void named(const std::string &name)
-        {
-            static_assert(
-                std::is_base_of<InterfaceType, ImplementationType>::value,
-                "Registered must implement interface");
-
-            container.wireInterfaceInternal<InterfaceType>(name, creator);
-        }
-
-        DIContainer &container;
-        std::function<std::shared_ptr<ImplementationType>(DIContainer &) > creator;
-    };
-
     template<class T>
     RegistrationHelper<T> registerType()
     {
@@ -105,8 +75,6 @@ public:
         return RegistrationHelper<T>(
             *this, [instance](DIContainer &r) { return instance; });
     }
-
-
 
 private:
 
