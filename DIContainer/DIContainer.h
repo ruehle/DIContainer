@@ -90,6 +90,14 @@ public:
             *this, [injector](DIContainer &r) { return injector.template create<T>(r); });
     }
 
+    template<class T>
+    RegisterHelper registerInstance(std::shared_ptr<T> instance)
+    {
+        return RegisterHelper(
+            *this, [instance](DIContainer &r) { return instance; });
+    }
+
+
 
 private:
 

@@ -159,3 +159,19 @@ TEST(DIContainerTests, ResolveImplementationWithDependency_Succeeds)
     auto obj = resolver.resolve< ITestInterface2 >();
     ASSERT_NE(obj, nullptr);
 }
+
+TEST(DIContainerTests, RegisterAndResolveInstance_ReturnsSameInstance)
+{
+    DIContainer resolver;
+
+    auto instance = std::make_shared<TestImplementation>();
+
+    resolver.registerInstance(instance)
+        .as<ITestInterface>();
+
+    auto obj1 = resolver.resolve< ITestInterface >();
+    auto obj2 = resolver.resolve< ITestInterface >();
+
+    ASSERT_EQ(instance, obj1);
+    ASSERT_EQ(instance, obj2);
+}
