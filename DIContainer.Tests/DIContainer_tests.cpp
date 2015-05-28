@@ -148,13 +148,12 @@ TEST(DIContainerTests, ResolveImplementationWithDependencyByCode_Succeeds)
 TEST(DIContainerTests, ResolveImplementationWithDependency_Succeeds)
 {
     DIContainer resolver;
+
     resolver.registerType<TestImplementation>()
         .as<ITestInterface>();
-    {
+
     resolver.registerType<Interface2Implementation>(Injector<ITestInterface>())
         .as<ITestInterface2>();
-    }
-
 
     auto obj = resolver.resolve< ITestInterface2 >();
     ASSERT_NE(obj, nullptr);

@@ -47,53 +47,62 @@ public:
         return std::static_pointer_cast<T>(creatorIter->second(*this));
     }
 
+    template<class ImplementationType>
     class RegistrationHelper
     {
     public:
-        explicit RegistrationHelper(DIContainer &container, std::function<std::shared_ptr<void>(DIContainer &) > creator)
+        explicit RegistrationHelper(DIContainer &container, std::function<std::shared_ptr<ImplementationType>(DIContainer &) > creator)
             : container(container), creator(creator) {}
 
-        template<class T>
+        template<class InterfaceType>
         void as()
         {
-            container.wireInterfaceInternal<T>(creator);
+            static_assert( 
+                std::is_base_of<InterfaceType, ImplementationType>::value,
+                "Registered must implement interface");
+
+            container.wireInterfaceInternal<InterfaceType>(creator);
         }
 
-        template<class T>
+        template<class InterfaceType>
         void named(const std::string &name)
         {
-            container.wireInterfaceInternal<T>(name, creator);
+            static_assert(
+                std::is_base_of<InterfaceType, ImplementationType>::value,
+                "Registered must implement interface");
+
+            container.wireInterfaceInternal<InterfaceType>(name, creator);
         }
 
         DIContainer &container;
-        std::function<std::shared_ptr<void>(DIContainer &) > creator;        
+        std::function<std::shared_ptr<ImplementationType>(DIContainer &) > creator;
     };
 
     template<class T>
-    RegistrationHelper registerType()
+    RegistrationHelper<T> registerType()
     {
-        return RegistrationHelper(
+        return RegistrationHelper<T>(
             *this, [](DIContainer &r) { return std::make_shared<T>(); });
     }
 
     template<class T>
-    RegistrationHelper registerType(std::function< std::shared_ptr<T>(DIContainer &)> creator)
+    RegistrationHelper<T> registerType(std::function< std::shared_ptr<T>(DIContainer &)> creator)
     {
-        return RegistrationHelper(
+        return RegistrationHelper<T>(
             *this, creator);
     }
 
     template<class T, class... Args>
-    RegistrationHelper registerType( Injector<Args...> injector )
+    RegistrationHelper<T> registerType( Injector<Args...> injector )
     {
-        return RegistrationHelper(
+        return RegistrationHelper<T>(
             *this, [injector](DIContainer &r) { return injector.template create<T>(r); });
     }
 
     template<class T>
-    RegistrationHelper registerInstance(std::shared_ptr<T> instance)
+    RegistrationHelper<T> registerInstance(std::shared_ptr<T> instance)
     {
-        return RegistrationHelper(
+        return RegistrationHelper<T>(
             *this, [instance](DIContainer &r) { return instance; });
     }
 
@@ -102,7 +111,7 @@ public:
 private:
 
     template<class T>
-    void wireInterfaceInternal(std::function<std::shared_ptr<void>(DIContainer &)> creator)
+    void wireInterfaceInternal(std::function<std::shared_ptr<T>(DIContainer &)> creator)
     {
         if (dependencies.count(typeid(T)) > 0)
             throw DuplicateDependencyException();
@@ -110,7 +119,7 @@ private:
     }
 
     template<class T>
-    void wireInterfaceInternal(const std::string &name, std::function<std::shared_ptr<void>(DIContainer &)> creator)
+    void wireInterfaceInternal(const std::string &name, std::function<std::shared_ptr<T>(DIContainer &)> creator)
     {
         auto key = std::make_pair(name, std::type_index(typeid(T)));
         if (namedDependencies.count(key) > 0)
@@ -130,5 +139,6 @@ private:
         std::function < std::shared_ptr<void>(DIContainer &) >
     > namedDependencies;
 
+    template<class U>
     friend class RegistrationHelper;
 };
