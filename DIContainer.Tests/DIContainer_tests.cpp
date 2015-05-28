@@ -4,63 +4,88 @@
 
 using namespace DIContainer;
 
-class ITestInterface
+class IService
 {
 public:
-    virtual ~ITestInterface() = default;
+    virtual ~IService() = default;
 };
 
-class TestImplementation : public ITestInterface
+class ServiceImplementation : public IService
 {};
 
-class TestImplementation2 : public ITestInterface
+class ServiceImplementation2 : public IService
 {};
 
-class TestImplementation3 : public ITestInterface
+class ServiceImplementation3 : public IService
 {};
 
-class ITestInterface2
+class IAnotherService
 {
 public:
-    virtual ~ITestInterface2() = default;
+    virtual ~IAnotherService() = default;
 };
 
-class Interface2Implementation : public ITestInterface2
+class DependentServiceImplementation : public IAnotherService
 {
 public:
-    explicit Interface2Implementation(
-        std::shared_ptr<ITestInterface> dependency)
+    explicit DependentServiceImplementation(
+        std::shared_ptr<IService> dependency)
     {
         if (dependency == nullptr)
-            throw std::logic_error("argument is nullptr");
+            throw std::logic_error("invalid argument");
     }
 };
-
 
 TEST(DIContainerTests, ResolveUnregisteredDependency_TrowsUnresolvedDependencyException)
 {
     Container resolver;
-    ASSERT_THROW(resolver.resolve<ITestInterface>(), UnresolvedDependencyException);
-}
-
-TEST(DIContainerTests, ResolveRegisteredDependency_ReturnsInstance)
-{
-    Container resolver;
-    resolver.registerType<TestImplementation>().as<ITestInterface>();
-
-    auto obj = resolver.resolve< ITestInterface >();
-    auto objCasted = std::dynamic_pointer_cast<TestImplementation>(obj);
-    ASSERT_NE(objCasted, nullptr);
+    ASSERT_THROW(resolver.resolve<IService>(), UnresolvedDependencyException);
 }
 
 TEST(DIContainerTests, RegisteredSameDependencyTwice_ThrowsDuplicateDependencyException)
 {
     Container resolver;
 
-    resolver.registerType<TestImplementation>().as<ITestInterface>();
+    resolver.registerType<ServiceImplementation>().as<IService>();
 
     ASSERT_THROW(
-        resolver.registerType<TestImplementation>().as<ITestInterface>(),
+        resolver.registerType<ServiceImplementation>().as<IService>(),
+        DuplicateDependencyException
+        );
+}
+
+TEST(DIContainerTests, ResolveRegisteredDependency_ReturnsInstance)
+{
+    Container resolver;
+    resolver.registerType<ServiceImplementation>().as<IService>();
+
+    auto obj = resolver.resolve< IService >();
+
+    ASSERT_NE(std::dynamic_pointer_cast<ServiceImplementation>(obj), nullptr);
+}
+
+TEST(DIContainerTests, CallResolveTwice_ReturnsDifferentInstances)
+{
+    Container resolver;
+    resolver.registerType<ServiceImplementation>()
+        .as<IService>();
+
+    auto obj1 = resolver.resolve< IService >();
+    auto obj2 = resolver.resolve< IService >();
+
+    ASSERT_NE(obj1, obj2);
+}
+
+TEST(DIContainerTests, RegisterDependencyWithSameNameAndType_ThrowsDuplicateDependencyException)
+{
+    Container resolver;
+
+    resolver.registerType<ServiceImplementation>()
+        .named<IService>("name");
+
+    ASSERT_THROW(
+        resolver.registerType<ServiceImplementation>()
+        .named<IService>("name"),
         DuplicateDependencyException
         );
 }
@@ -69,14 +94,14 @@ TEST(DIContainerTests, RegisteredNamedAndUnnamedDependency_Succeeds)
 {
     Container resolver;
 
-    resolver.registerType<TestImplementation>()
-        .as<ITestInterface>();
+    resolver.registerType<ServiceImplementation>()
+        .as<IService>();
 
-    resolver.registerType<TestImplementation2>()
-        .named<ITestInterface>("name2");
+    resolver.registerType<ServiceImplementation2>()
+        .named<IService>("name2");
 
-    resolver.registerType<TestImplementation3>()
-        .named<ITestInterface>("name3");
+    resolver.registerType<ServiceImplementation3>()
+        .named<IService>("name3");
 
 }
 
@@ -84,66 +109,40 @@ TEST(DIContainerTests, ResolveNamedAndUnnamedTypes_InstanciateCorrectly)
 {
     Container resolver;
 
-    resolver.registerType<TestImplementation>()
-        .as<ITestInterface>();
+    resolver.registerType<ServiceImplementation>()
+        .as<IService>();
 
-    resolver.registerType<TestImplementation2>()
-        .named<ITestInterface>("name2");
+    resolver.registerType<ServiceImplementation2>()
+        .named<IService>("name2");
 
-    resolver.registerType<TestImplementation3>()
-        .named<ITestInterface>("name3");
+    resolver.registerType<ServiceImplementation3>()
+        .named<IService>("name3");
 
-    auto obj = std::dynamic_pointer_cast<TestImplementation>(resolver.resolve<ITestInterface>());
-    auto obj2 = std::dynamic_pointer_cast<TestImplementation2>(resolver.resolve<ITestInterface>("name2"));
-    auto obj3 = std::dynamic_pointer_cast<TestImplementation3>(resolver.resolve<ITestInterface>("name3"));
+    auto obj = std::dynamic_pointer_cast<ServiceImplementation>(resolver.resolve<IService>());
+    auto obj2 = std::dynamic_pointer_cast<ServiceImplementation2>(resolver.resolve<IService>("name2"));
+    auto obj3 = std::dynamic_pointer_cast<ServiceImplementation3>(resolver.resolve<IService>("name3"));
 
     ASSERT_NE(obj, nullptr);
     ASSERT_NE(obj2, nullptr);
     ASSERT_NE(obj3, nullptr);
 }
 
-TEST(DIContainerTests, RegisterDependencyWithSameNameAndType_ThrowsDuplicateDependencyException)
-{
-    Container resolver;
-
-    resolver.registerType<TestImplementation>()
-        .named<ITestInterface>("name");
-
-    ASSERT_THROW(
-        resolver.registerType<TestImplementation>()
-        .named<ITestInterface>("name"),
-        DuplicateDependencyException
-        );
-}
-
-TEST(DIContainerTests, CallResolveTwice_ReturnsDifferentInstances)
-{
-    Container resolver;
-    resolver.registerType<TestImplementation>()
-        .as<ITestInterface>();
-
-    auto obj1 = resolver.resolve< ITestInterface >();
-    auto obj2 = resolver.resolve< ITestInterface >();
-
-    ASSERT_NE(obj1, obj2);
-}
-
 TEST(DIContainerTests, ResolveImplementationWithDependencyByCode_Succeeds)
 {
     Container resolver;
-    resolver.registerType<TestImplementation>()
-        .as<ITestInterface>();
+    resolver.registerType<ServiceImplementation>()
+        .as<IService>();
 
     auto create = [](Container &r){
-        return std::make_shared<Interface2Implementation>(
-            r.resolve<ITestInterface>()
+        return std::make_shared<DependentServiceImplementation>(
+            r.resolve<IService>()
             ); };
 
-    resolver.registerType<Interface2Implementation>(create)
-        .as<ITestInterface2>();
+    resolver.registerType<DependentServiceImplementation>(create)
+        .as<IAnotherService>();
 
 
-    auto obj = resolver.resolve< ITestInterface2 >();
+    auto obj = resolver.resolve< IAnotherService >();
     ASSERT_NE(obj, nullptr);
 }
 
@@ -151,13 +150,13 @@ TEST(DIContainerTests, ResolveImplementationWithDependency_Succeeds)
 {
     Container resolver;
 
-    resolver.registerType<TestImplementation>()
-        .as<ITestInterface>();
+    resolver.registerType<ServiceImplementation>()
+        .as<IService>();
 
-    resolver.registerType<Interface2Implementation>(Injector<ITestInterface>())
-        .as<ITestInterface2>();
+    resolver.registerType<DependentServiceImplementation>(Injector<IService>())
+        .as<IAnotherService>();
 
-    auto obj = resolver.resolve< ITestInterface2 >();
+    auto obj = resolver.resolve< IAnotherService >();
     ASSERT_NE(obj, nullptr);
 }
 
@@ -165,13 +164,13 @@ TEST(DIContainerTests, RegisterAndResolveInstance_ReturnsSameInstance)
 {
     Container resolver;
 
-    auto instance = std::make_shared<TestImplementation>();
+    auto instance = std::make_shared<ServiceImplementation>();
 
     resolver.registerInstance(instance)
-        .as<ITestInterface>();
+        .as<IService>();
 
-    auto obj1 = resolver.resolve< ITestInterface >();
-    auto obj2 = resolver.resolve< ITestInterface >();
+    auto obj1 = resolver.resolve< IService >();
+    auto obj2 = resolver.resolve< IService >();
 
     ASSERT_EQ(instance, obj1);
     ASSERT_EQ(instance, obj2);
