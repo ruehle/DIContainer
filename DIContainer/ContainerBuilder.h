@@ -59,6 +59,8 @@ namespace DIContainer
                 *this, [instance](Container &r) { return instance; });
         }
 
+        void enableDuplicatesCeck(bool isEnabled) { duplicateCheck = isEnabled; }
+
         std::shared_ptr<Container> build()
         {
             return std::make_shared<Container>(dependencies, namedDependencies);
@@ -66,10 +68,12 @@ namespace DIContainer
 
     private:
 
+        bool duplicateCheck = false;
+
         template<class T>
         void wireInterfaceInternal(std::function<std::shared_ptr<T>(Container &)> creator)
         {
-            if (dependencies.count(typeid(T)) > 0)
+            if (dependencies.count(typeid(T)) > 0 && duplicateCheck )
                 throw DuplicateDependencyException();
             dependencies[typeid(T)] = creator;
         }
@@ -78,7 +82,7 @@ namespace DIContainer
         void wireInterfaceInternal(const std::string &name, std::function<std::shared_ptr<T>(Container &)> creator)
         {
             auto key = std::make_pair(name, std::type_index(typeid(T)));
-            if (namedDependencies.count(key) > 0)
+            if (namedDependencies.count(key) > 0 && duplicateCheck )
                 throw DuplicateDependencyException();
 
             namedDependencies[key] = creator;

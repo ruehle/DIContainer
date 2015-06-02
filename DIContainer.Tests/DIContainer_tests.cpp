@@ -45,9 +45,11 @@ TEST(DIContainerTests, ResolveUnregisteredDependency_TrowsUnresolvedDependencyEx
     ASSERT_THROW(resolver->resolve<IService>(), UnresolvedDependencyException);
 }
 
-TEST(DIContainerTests, RegisteredSameDependencyTwice_ThrowsDuplicateDependencyException)
+TEST(DIContainerTests, RegisteredSameDependencyTwiceWithEnabledDuplicateCheck_ThrowsDuplicateDependencyException)
 {
     ContainerBuilder builder;
+
+    builder.enableDuplicatesCeck(true);
 
     builder.registerType<ServiceImplementation>().as<IService>();
 
@@ -55,6 +57,19 @@ TEST(DIContainerTests, RegisteredSameDependencyTwice_ThrowsDuplicateDependencyEx
         builder.registerType<ServiceImplementation>().as<IService>(),
         DuplicateDependencyException
         );
+}
+
+TEST(DIContainerTests, RegisteredSameDependencyTwice_InstanciatesLastDependency)
+{
+    ContainerBuilder builder;
+
+    builder.registerType<ServiceImplementation>().as<IService>();
+    builder.registerType<ServiceImplementation2>().as<IService>();
+
+    auto resolver = builder.build();
+
+    auto obj = resolver->resolve<IService>();
+    ASSERT_NE(std::dynamic_pointer_cast<ServiceImplementation2>(obj), nullptr);
 }
 
 TEST(DIContainerTests, ResolveRegisteredDependency_ReturnsInstance)
@@ -82,9 +97,11 @@ TEST(DIContainerTests, CallResolveTwice_ReturnsDifferentInstances)
     ASSERT_NE(obj1, obj2);
 }
 
-TEST(DIContainerTests, RegisterDependencyWithSameNameAndType_ThrowsDuplicateDependencyException)
+TEST(DIContainerTests, RegisterDependencyWithSameNameAndTypeAndDuplicateCheckEnabled_ThrowsDuplicateDependencyException)
 {
     ContainerBuilder builder;
+
+    builder.enableDuplicatesCeck(true);
 
     builder.registerType<ServiceImplementation>()
         .named<IService>("name");
@@ -94,6 +111,22 @@ TEST(DIContainerTests, RegisterDependencyWithSameNameAndType_ThrowsDuplicateDepe
         .named<IService>("name"),
         DuplicateDependencyException
         );
+}
+
+TEST(DIContainerTests, RegisterDependencyWithSameNameAndTypeAnd_InstanciatesLast)
+{
+    ContainerBuilder builder;
+
+    builder.registerType<ServiceImplementation>()
+        .named<IService>("name");
+
+    builder.registerType<ServiceImplementation2>()
+        .named<IService>("name");
+
+    auto resolver = builder.build();
+    auto obj = resolver->resolve<IService>( "name" );
+    
+    ASSERT_NE(std::dynamic_pointer_cast<ServiceImplementation2>(obj), nullptr);
 }
 
 TEST(DIContainerTests, RegisteredNamedAndUnnamedDependency_Succeeds)
