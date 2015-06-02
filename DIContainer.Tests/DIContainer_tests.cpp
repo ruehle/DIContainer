@@ -220,3 +220,18 @@ TEST(DIContainerTests, RegisterAndResolveInstance_ReturnsSameInstance)
     ASSERT_EQ(instance, obj1);
     ASSERT_EQ(instance, obj2);
 }
+
+TEST(DIContainerTests, SingleInstanceLifetime_ReturnsSameInstance)
+{
+    ContainerBuilder builder;
+
+    builder.registerType<ServiceImplementation>()
+        .as<IService>().singleInstance();
+
+    auto resolver = builder.build();
+
+    auto obj1 = resolver->resolve< IService >();
+    auto obj2 = resolver->resolve< IService >();
+
+    ASSERT_EQ(obj1, obj2);
+}

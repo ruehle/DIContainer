@@ -17,23 +17,30 @@ namespace DIContainer
             : containerBuilder(containerBuilder), creator(creator) {}
 
         template<class InterfaceType>
-        void as()
+        RegistrationHelper &as()
         {
             static_assert(
                 std::is_base_of<InterfaceType, ImplementationType>::value,
                 "Registered type does not implement interface");
 
             containerBuilder.wireInterfaceInternal<InterfaceType>(creator);
+
+            return *this;
         }
 
         template<class InterfaceType>
-        void named(const std::string &name)
+        RegistrationHelper &named(const std::string &name)
         {
             static_assert(
                 std::is_base_of<InterfaceType, ImplementationType>::value,
                 "Registered type does no implement interface");
 
             containerBuilder.wireInterfaceInternal<InterfaceType>(name, creator);
+            return *this;
+        }
+
+        void singleInstance()
+        {            
         }
 
         ContainerBuilder &containerBuilder;
