@@ -79,6 +79,11 @@ namespace DIContainer
                 *this, [instance](Container &r) { return instance; });
         }
 
+        std::shared_ptr<Container> build()
+        {
+            return std::make_shared<Container>(*this);
+        }
+
     private:
 
         template<class T>
