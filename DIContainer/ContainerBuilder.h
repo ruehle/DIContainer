@@ -9,6 +9,7 @@
 #include "Injector.h"
 #include "RegistrationHelper.h"
 #include "Container.h"
+#include "RegistrationData.h"
 
 namespace DIContainer
 {
@@ -99,6 +100,7 @@ namespace DIContainer
             std::function < std::shared_ptr<void>(Container &) >
         > namedDependencies;
 
+        std::vector<std::shared_ptr<RegistrationData>> registeredTypes;
         template<class U>
         friend class RegistrationHelper;
     };
