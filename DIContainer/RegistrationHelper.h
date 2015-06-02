@@ -5,6 +5,8 @@ namespace DIContainer
     class Container;
     class ContainerBuilder;
 
+    /// Helper class to configure the container builder, for internal use
+    ///
     template<class ImplementationType>
     class RegistrationHelper
     {
@@ -19,7 +21,7 @@ namespace DIContainer
         {
             static_assert(
                 std::is_base_of<InterfaceType, ImplementationType>::value,
-                "Registered must implement interface");
+                "Registered type does not implement interface");
 
             containerBuilder.wireInterfaceInternal<InterfaceType>(creator);
         }
@@ -29,7 +31,7 @@ namespace DIContainer
         {
             static_assert(
                 std::is_base_of<InterfaceType, ImplementationType>::value,
-                "Registered must implement interface");
+                "Registered type does no implement interface");
 
             containerBuilder.wireInterfaceInternal<InterfaceType>(name, creator);
         }

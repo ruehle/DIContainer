@@ -12,6 +12,8 @@
 
 namespace DIContainer
 {
+    /// A dependency for this interface was already registered
+    ///
     class DuplicateDependencyException : public std::logic_error
     {
     public:
@@ -20,6 +22,11 @@ namespace DIContainer
         {}
     };
 
+    /// Class do perform wire up and instantiate Container
+    ///
+    /// All dependencies must be registered at the ContainerBuilder. The build function
+    /// creates a container which can be used to resolve dependencies.
+    ///
     class ContainerBuilder
     {
     public:

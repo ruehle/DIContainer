@@ -17,6 +17,11 @@ namespace DIContainer
         {}
     };
 
+    /// Class to resolve dependencies.
+    ///
+    /// All dependencies are resolved at the Container. The container is created
+    /// and configured using the ContainerBuilder
+    ///
     class Container
     {
     public:

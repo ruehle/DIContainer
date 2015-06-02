@@ -5,6 +5,12 @@ namespace DIContainer
 {
     class Container;
 
+    /// Auto-wireing helper class for constructor injection
+    ///
+    /// The Injector is a helper class to automatically inject dependencies as
+    /// constructor arguments, resolving all the dependencies from the container.
+    /// The arguments which are injected are specified by template parameters.
+    ///    
     template<class... Args>
     class Injector
     {
@@ -15,4 +21,5 @@ namespace DIContainer
             return std::make_shared<T>(r.resolve<Args...>());
         }
     };
+
 }
