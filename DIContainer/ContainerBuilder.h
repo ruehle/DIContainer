@@ -35,29 +35,38 @@ namespace DIContainer
         template<class T>
         RegistrationHelper<T> registerType()
         {
+            auto registration = createRegistration(
+                [](Container &r) { return std::make_shared<T>(); }
+            );
+
             return RegistrationHelper<T>(
-                *this, [](Container &r) { return std::make_shared<T>(); });
+                *this, 
+                registration);
         }
 
         template<class T>
         RegistrationHelper<T> registerType(std::function< std::shared_ptr<T>(Container &)> creator)
         {
             return RegistrationHelper<T>(
-                *this, creator);
+                *this, createRegistration(creator) );
         }
 
         template<class T, class... Args>
         RegistrationHelper<T> registerType(Injector<Args...> injector)
         {
             return RegistrationHelper<T>(
-                *this, [injector](Container &r) { return injector.template create<T>(r); });
+                *this, 
+                createRegistration([injector](Container &r) { return injector.template create<T>(r); })
+                );
         }
 
         template<class T>
         RegistrationHelper<T> registerInstance(std::shared_ptr<T> instance)
         {
             return RegistrationHelper<T>(
-                *this, [instance](Container &r) { return instance; });
+                *this, 
+                createRegistration([instance](Container &r) { return instance; })
+                );
         }
 
         void enableDuplicatesCeck(bool isEnabled) { duplicateCheck = isEnabled; }
@@ -72,32 +81,40 @@ namespace DIContainer
         bool duplicateCheck = false;
 
         template<class T>
-        void wireInterfaceInternal(std::function<std::shared_ptr<T>(Container &)> creator)
+        void wireInterfaceInternal(RegistrationData *registration)
         {
             if (dependencies.count(typeid(T)) > 0 && duplicateCheck )
                 throw DuplicateDependencyException();
-            dependencies[typeid(T)] = creator;
+            dependencies[typeid(T)] = registration;
         }
 
         template<class T>
-        void wireInterfaceInternal(const std::string &name, std::function<std::shared_ptr<T>(Container &)> creator)
+        void wireInterfaceInternal(const std::string &name, RegistrationData *registration )
         {
             auto key = std::make_pair(name, std::type_index(typeid(T)));
             if (namedDependencies.count(key) > 0 && duplicateCheck )
                 throw DuplicateDependencyException();
 
-            namedDependencies[key] = creator;
+            namedDependencies[key] = registration;
         }
 
+        RegistrationData *createRegistration( 
+            RegistrationData::UntypedFactory creator
+            )
+        {            
+            auto registration = std::make_shared<RegistrationData>(creator);
+            registeredTypes.push_back(registration);
+            return registration.get();
+        }
 
         std::unordered_map <
             std::type_index,
-            std::function < std::shared_ptr<void>(Container &) >
+            RegistrationData *
         > dependencies;
 
         std::map <
             std::pair<std::string, std::type_index>,
-            std::function < std::shared_ptr<void>(Container &) >
+            RegistrationData *
         > namedDependencies;
 
         std::vector<std::shared_ptr<RegistrationData>> registeredTypes;

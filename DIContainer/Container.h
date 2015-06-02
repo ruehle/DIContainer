@@ -28,10 +28,10 @@ namespace DIContainer
 
         Container(
             std::unordered_map < std::type_index,
-            std::function < std::shared_ptr<void>(Container &) >
+           RegistrationData *
             > dependencies,
             std::map < std::pair<std::string, std::type_index>,
-            std::function < std::shared_ptr<void>(Container &) >
+            RegistrationData *
             > namedDependencies)
             : dependencies(dependencies), namedDependencies(namedDependencies) {}
 
@@ -41,7 +41,7 @@ namespace DIContainer
             auto creatorIter = dependencies.find(typeid(T));
             if (creatorIter == dependencies.end())
                 throw UnresolvedDependencyException();
-            return std::static_pointer_cast<T>(creatorIter->second(*this));
+            return std::static_pointer_cast<T>(creatorIter->second->build(*this));
         }
 
         template<class T>
@@ -51,7 +51,7 @@ namespace DIContainer
             auto creatorIter = namedDependencies.find(key);
             if (creatorIter == namedDependencies.end())
                 throw UnresolvedDependencyException();
-            return std::static_pointer_cast<T>(creatorIter->second(*this));
+            return std::static_pointer_cast<T>(creatorIter->second->build(*this));
         }
 
 
@@ -59,12 +59,12 @@ namespace DIContainer
 
         std::unordered_map <
             std::type_index,
-            std::function < std::shared_ptr<void>(Container &) >
+            RegistrationData *
         > dependencies;
 
         std::map <
             std::pair<std::string, std::type_index>,
-            std::function < std::shared_ptr<void>(Container &) >
+            RegistrationData *
         > namedDependencies;
 
     };

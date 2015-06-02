@@ -1,4 +1,5 @@
 #pragma once
+#include "RegistrationData.h"
 
 namespace DIContainer
 {
@@ -13,8 +14,8 @@ namespace DIContainer
     public:
         explicit RegistrationHelper(
             ContainerBuilder &containerBuilder, 
-            std::function<std::shared_ptr<ImplementationType>(Container &) > creator)
-            : containerBuilder(containerBuilder), creator(creator) {}
+            RegistrationData *registrationData)
+            : containerBuilder(containerBuilder), registration(registrationData) {}
 
         template<class InterfaceType>
         RegistrationHelper &as()
@@ -23,7 +24,7 @@ namespace DIContainer
                 std::is_base_of<InterfaceType, ImplementationType>::value,
                 "Registered type does not implement interface");
 
-            containerBuilder.wireInterfaceInternal<InterfaceType>(creator);
+            containerBuilder.wireInterfaceInternal<InterfaceType>(registration);
 
             return *this;
         }
@@ -35,16 +36,17 @@ namespace DIContainer
                 std::is_base_of<InterfaceType, ImplementationType>::value,
                 "Registered type does no implement interface");
 
-            containerBuilder.wireInterfaceInternal<InterfaceType>(name, creator);
+            containerBuilder.wireInterfaceInternal<InterfaceType>(name, registration);
             return *this;
         }
 
         void singleInstance()
-        {            
+        {     
+            registration->setLifetimeScope(LifetimeScope::SingleInstance);
         }
 
         ContainerBuilder &containerBuilder;
-        std::function<std::shared_ptr<ImplementationType>(Container &) > creator;
+        RegistrationData *registration;
     };
 
 }
