@@ -21,6 +21,9 @@
     <ClInclude Include="RegistrationHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ContainerBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Container.h">
       <Filter>Header Files</Filter>
     </ClInclude>

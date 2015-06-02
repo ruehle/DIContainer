@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "../DIContainer/Container.h"
+#include "../DIContainer/ContainerBuilder.h"
 #include "../DIContainer/Injector.h"
 
 using namespace DIContainer;
@@ -40,14 +40,14 @@ namespace {
 
 TEST(DIContainerTests, ResolveUnregisteredDependency_TrowsUnresolvedDependencyException)
 {
-    Container builder;
+    ContainerBuilder builder;
     auto resolver = builder.build();
     ASSERT_THROW(resolver->resolve<IService>(), UnresolvedDependencyException);
 }
 
 TEST(DIContainerTests, RegisteredSameDependencyTwice_ThrowsDuplicateDependencyException)
 {
-    Container builder;
+    ContainerBuilder builder;
 
     builder.registerType<ServiceImplementation>().as<IService>();
 
@@ -59,7 +59,7 @@ TEST(DIContainerTests, RegisteredSameDependencyTwice_ThrowsDuplicateDependencyEx
 
 TEST(DIContainerTests, ResolveRegisteredDependency_ReturnsInstance)
 {
-    Container builder;
+    ContainerBuilder builder;
     builder.registerType<ServiceImplementation>().as<IService>();
 
     auto resolver = builder.build();
@@ -70,7 +70,7 @@ TEST(DIContainerTests, ResolveRegisteredDependency_ReturnsInstance)
 
 TEST(DIContainerTests, CallResolveTwice_ReturnsDifferentInstances)
 {
-    Container builder;
+    ContainerBuilder builder;
     builder.registerType<ServiceImplementation>()
         .as<IService>();
 
@@ -84,7 +84,7 @@ TEST(DIContainerTests, CallResolveTwice_ReturnsDifferentInstances)
 
 TEST(DIContainerTests, RegisterDependencyWithSameNameAndType_ThrowsDuplicateDependencyException)
 {
-    Container builder;
+    ContainerBuilder builder;
 
     builder.registerType<ServiceImplementation>()
         .named<IService>("name");
@@ -98,22 +98,22 @@ TEST(DIContainerTests, RegisterDependencyWithSameNameAndType_ThrowsDuplicateDepe
 
 TEST(DIContainerTests, RegisteredNamedAndUnnamedDependency_Succeeds)
 {
-    Container resolver;
+    ContainerBuilder builder;
 
-    resolver.registerType<ServiceImplementation>()
+    builder.registerType<ServiceImplementation>()
         .as<IService>();
 
-    resolver.registerType<ServiceImplementation2>()
+    builder.registerType<ServiceImplementation2>()
         .named<IService>("name2");
 
-    resolver.registerType<ServiceImplementation3>()
+    builder.registerType<ServiceImplementation3>()
         .named<IService>("name3");
 
 }
 
 TEST(DIContainerTests, ResolveNamedAndUnnamedTypes_InstanciateCorrectly)
 {
-    Container builder;
+    ContainerBuilder builder;
 
     builder.registerType<ServiceImplementation>()
         .as<IService>();
@@ -137,7 +137,7 @@ TEST(DIContainerTests, ResolveNamedAndUnnamedTypes_InstanciateCorrectly)
 
 TEST(DIContainerTests, ResolveImplementationWithDependencyByCode_Succeeds)
 {
-    Container builder;
+    ContainerBuilder builder;
     builder.registerType<ServiceImplementation>()
         .as<IService>();
 
@@ -157,7 +157,7 @@ TEST(DIContainerTests, ResolveImplementationWithDependencyByCode_Succeeds)
 
 TEST(DIContainerTests, ResolveImplementationWithDependency_Succeeds)
 {
-    Container builder;
+    ContainerBuilder builder;
 
     builder.registerType<ServiceImplementation>()
         .as<IService>();
@@ -172,7 +172,7 @@ TEST(DIContainerTests, ResolveImplementationWithDependency_Succeeds)
 
 TEST(DIContainerTests, RegisterAndResolveInstance_ReturnsSameInstance)
 {
-    Container builder;
+    ContainerBuilder builder;
 
     auto instance = std::make_shared<ServiceImplementation>();
 

@@ -2,15 +2,17 @@
 
 namespace DIContainer
 {
-
     class Container;
+    class ContainerBuilder;
 
     template<class ImplementationType>
     class RegistrationHelper
     {
     public:
-        explicit RegistrationHelper(Container &container, std::function<std::shared_ptr<ImplementationType>(Container &) > creator)
-            : container(container), creator(creator) {}
+        explicit RegistrationHelper(
+            ContainerBuilder &containerBuilder, 
+            std::function<std::shared_ptr<ImplementationType>(Container &) > creator)
+            : containerBuilder(containerBuilder), creator(creator) {}
 
         template<class InterfaceType>
         void as()
@@ -19,7 +21,7 @@ namespace DIContainer
                 std::is_base_of<InterfaceType, ImplementationType>::value,
                 "Registered must implement interface");
 
-            container.wireInterfaceInternal<InterfaceType>(creator);
+            containerBuilder.wireInterfaceInternal<InterfaceType>(creator);
         }
 
         template<class InterfaceType>
@@ -29,10 +31,10 @@ namespace DIContainer
                 std::is_base_of<InterfaceType, ImplementationType>::value,
                 "Registered must implement interface");
 
-            container.wireInterfaceInternal<InterfaceType>(name, creator);
+            containerBuilder.wireInterfaceInternal<InterfaceType>(name, creator);
         }
 
-        Container &container;
+        ContainerBuilder &containerBuilder;
         std::function<std::shared_ptr<ImplementationType>(Container &) > creator;
     };
 
