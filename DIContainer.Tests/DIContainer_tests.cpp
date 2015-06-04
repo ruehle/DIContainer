@@ -83,6 +83,23 @@ TEST(DIContainerTests, ResolveRegisteredDependency_ReturnsInstance)
     ASSERT_NE(std::dynamic_pointer_cast<ServiceImplementation>(obj), nullptr);
 }
 
+std::shared_ptr<Container> buildContainer()
+{
+    ContainerBuilder builder;
+    builder.registerType<ServiceImplementation>().as<IService>();
+
+    return builder.build();	
+}
+
+TEST(DIContainerTests, ContainerBuilderOutOfScopeWhenResolving_Succeeds)
+{
+    auto resolver = buildContainer();
+    auto obj = resolver->resolve< IService >();
+
+    ASSERT_NE(std::dynamic_pointer_cast<ServiceImplementation>(obj), nullptr);
+}
+
+
 TEST(DIContainerTests, CallResolveTwice_ReturnsDifferentInstances)
 {
     ContainerBuilder builder;

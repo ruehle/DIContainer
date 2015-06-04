@@ -73,7 +73,7 @@ namespace DIContainer
 
         std::shared_ptr<Container> build()
         {
-            return std::make_shared<Container>(dependencies, namedDependencies);
+            return std::make_shared<Container>(registeredTypes, dependencies, namedDependencies);
         }
 
     private:
@@ -85,7 +85,7 @@ namespace DIContainer
         {
             if (dependencies.count(typeid(T)) > 0 && duplicateCheck )
                 throw DuplicateDependencyException();
-            dependencies[typeid(T)] = registration;
+            dependencies[typeid(T)] = registration->id();
         }
 
         template<class T>
@@ -95,29 +95,28 @@ namespace DIContainer
             if (namedDependencies.count(key) > 0 && duplicateCheck )
                 throw DuplicateDependencyException();
 
-            namedDependencies[key] = registration;
+            namedDependencies[key] = registration->id();
         }
 
         RegistrationData *createRegistration( 
             RegistrationData::UntypedFactory creator
             )
-        {            
-            auto registration = std::make_shared<RegistrationData>(creator);
-            registeredTypes.push_back(registration);
-            return registration.get();
+        {                        
+            registeredTypes.push_back(RegistrationData(registeredTypes.size(), creator));
+            return &registeredTypes.back();
         }
 
         std::unordered_map <
             std::type_index,
-            RegistrationData *
+            std::size_t
         > dependencies;
 
         std::map <
             std::pair<std::string, std::type_index>,
-            RegistrationData *
+            std::size_t
         > namedDependencies;
 
-        std::vector<std::shared_ptr<RegistrationData>> registeredTypes;
+        std::vector<RegistrationData> registeredTypes;
         template<class U>
         friend class RegistrationHelper;
     };

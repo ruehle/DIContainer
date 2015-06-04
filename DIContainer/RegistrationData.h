@@ -19,8 +19,8 @@ namespace DIContainer
 
         using UntypedFactory = std::function<std::shared_ptr<void>(Container &)>;
 
-        explicit RegistrationData(UntypedFactory factory)
-            : factory(factory) {}
+        explicit RegistrationData(std::size_t id,UntypedFactory factory)
+            : _id(id), factory(factory) {}
 
         std::shared_ptr<void> build(Container &r)
         {
@@ -39,10 +39,13 @@ namespace DIContainer
             this->lifetime = lifetime;
         }
 
+        std::size_t id() { return _id; }
+
     private:
         LifetimeScope lifetime = LifetimeScope::PerDependency;
         std::shared_ptr<void> instanceIfShared;
 
         UntypedFactory factory;
+        std::size_t _id;
     };
 }

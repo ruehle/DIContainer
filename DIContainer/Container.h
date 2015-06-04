@@ -1,11 +1,12 @@
 #pragma once
 
 #include <stdexcept>
-#include <functional>
 #include <memory>
 #include <unordered_map>
 #include <typeindex>
 #include <map>
+#include "RegistrationData.h"
+
 
 namespace DIContainer
 {
@@ -26,14 +27,14 @@ namespace DIContainer
     {
     public:
 
-        Container(
+        Container(std::vector<RegistrationData> registeredTypes, 
             std::unordered_map < std::type_index,
-           RegistrationData *
+           std::size_t
             > dependencies,
             std::map < std::pair<std::string, std::type_index>,
-            RegistrationData *
+            std::size_t
             > namedDependencies)
-            : dependencies(dependencies), namedDependencies(namedDependencies) {}
+            : registeredTypes(registeredTypes), dependencies(dependencies), namedDependencies(namedDependencies) {}
 
         template<class T>
         std::shared_ptr<T> resolve()
@@ -41,7 +42,7 @@ namespace DIContainer
             auto creatorIter = dependencies.find(typeid(T));
             if (creatorIter == dependencies.end())
                 throw UnresolvedDependencyException();
-            return std::static_pointer_cast<T>(creatorIter->second->build(*this));
+            return std::static_pointer_cast<T>(registeredTypes[creatorIter->second].build(*this));
         }
 
         template<class T>
@@ -51,21 +52,24 @@ namespace DIContainer
             auto creatorIter = namedDependencies.find(key);
             if (creatorIter == namedDependencies.end())
                 throw UnresolvedDependencyException();
-            return std::static_pointer_cast<T>(creatorIter->second->build(*this));
+            return std::static_pointer_cast<T>(registeredTypes[creatorIter->second].build(*this));
         }
 
 
     private:
 
+        std::vector<RegistrationData> registeredTypes;
+
         std::unordered_map <
             std::type_index,
-            RegistrationData *
+            std::size_t
         > dependencies;
 
         std::map <
             std::pair<std::string, std::type_index>,
-            RegistrationData *
+            std::size_t
         > namedDependencies;
+
 
     };
 
