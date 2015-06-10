@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include "internal/RegistrationData.h"
 #include "internal/RegistrationKey.h"
+#include "internal/TypedService.h"
+#include "internal/KeyedService.h"
 
 
 namespace DIContainer

@@ -5,19 +5,19 @@
 using namespace DIContainer;
 
 namespace {
-    class IService
+    class IMyService
     {
     public:
-        virtual ~IService() = default;
+        virtual ~IMyService() = default;
     };
 
-    class ServiceImplementation : public IService
+    class ServiceImplementation : public IMyService
     {};
 
-    class ServiceImplementation2 : public IService
+    class ServiceImplementation2 : public IMyService
     {};
 
-    class ServiceImplementation3 : public IService
+    class ServiceImplementation3 : public IMyService
     {};
 
     class IAnotherService
@@ -30,7 +30,7 @@ namespace {
     {
     public:
         explicit DependentServiceImplementation(
-            std::shared_ptr<IService> dependency)
+            std::shared_ptr<IMyService> dependency)
         {
             if (dependency == nullptr)
                 throw std::logic_error("invalid argument");
@@ -42,7 +42,7 @@ TEST(DIContainerTests, ResolveUnregisteredDependency_TrowsUnresolvedDependencyEx
 {
     ContainerBuilder builder;
     auto resolver = builder.build();
-    ASSERT_THROW(resolver->resolve<IService>(), UnresolvedDependencyException);
+    ASSERT_THROW(resolver->resolve<IMyService>(), UnresolvedDependencyException);
 }
 
 TEST(DIContainerTests, RegisteredSameDependencyTwiceWithEnabledDuplicateCheck_ThrowsDuplicateDependencyException)
@@ -51,10 +51,10 @@ TEST(DIContainerTests, RegisteredSameDependencyTwiceWithEnabledDuplicateCheck_Th
 
     builder.enableDuplicatesCeck(true);
 
-    builder.registerType<ServiceImplementation>().as<IService>();
+    builder.registerType<ServiceImplementation>().as<IMyService>();
 
     ASSERT_THROW(
-        builder.registerType<ServiceImplementation>().as<IService>(),
+        builder.registerType<ServiceImplementation>().as<IMyService>(),
         DuplicateDependencyException
         );
 }
@@ -63,22 +63,22 @@ TEST(DIContainerTests, RegisteredSameDependencyTwice_InstanciatesLastDependency)
 {
     ContainerBuilder builder;
 
-    builder.registerType<ServiceImplementation>().as<IService>();
-    builder.registerType<ServiceImplementation2>().as<IService>();
+    builder.registerType<ServiceImplementation>().as<IMyService>();
+    builder.registerType<ServiceImplementation2>().as<IMyService>();
 
     auto resolver = builder.build();
 
-    auto obj = resolver->resolve<IService>();
+    auto obj = resolver->resolve<IMyService>();
     ASSERT_NE(std::dynamic_pointer_cast<ServiceImplementation2>(obj), nullptr);
 }
 
 TEST(DIContainerTests, ResolveRegisteredDependency_ReturnsInstance)
 {
     ContainerBuilder builder;
-    builder.registerType<ServiceImplementation>().as<IService>();
+    builder.registerType<ServiceImplementation>().as<IMyService>();
 
     auto resolver = builder.build();
-    auto obj = resolver->resolve< IService >();
+    auto obj = resolver->resolve< IMyService >();
 
     ASSERT_NE(std::dynamic_pointer_cast<ServiceImplementation>(obj), nullptr);
 }
@@ -86,7 +86,7 @@ TEST(DIContainerTests, ResolveRegisteredDependency_ReturnsInstance)
 std::shared_ptr<Container> buildContainer()
 {
     ContainerBuilder builder;
-    builder.registerType<ServiceImplementation>().as<IService>();
+    builder.registerType<ServiceImplementation>().as<IMyService>();
 
     return builder.build();	
 }
@@ -94,7 +94,7 @@ std::shared_ptr<Container> buildContainer()
 TEST(DIContainerTests, ContainerBuilderOutOfScopeWhenResolving_Succeeds)
 {
     auto resolver = buildContainer();
-    auto obj = resolver->resolve< IService >();
+    auto obj = resolver->resolve< IMyService >();
 
     ASSERT_NE(std::dynamic_pointer_cast<ServiceImplementation>(obj), nullptr);
 }
@@ -104,12 +104,12 @@ TEST(DIContainerTests, CallResolveTwice_ReturnsDifferentInstances)
 {
     ContainerBuilder builder;
     builder.registerType<ServiceImplementation>()
-        .as<IService>();
+        .as<IMyService>();
 
     auto resolver = builder.build();
 
-    auto obj1 = resolver->resolve< IService >();
-    auto obj2 = resolver->resolve< IService >();
+    auto obj1 = resolver->resolve< IMyService >();
+    auto obj2 = resolver->resolve< IMyService >();
 
     ASSERT_NE(obj1, obj2);
 }
@@ -121,11 +121,11 @@ TEST(DIContainerTests, RegisterDependencyWithSameNameAndTypeAndDuplicateCheckEna
     builder.enableDuplicatesCeck(true);
 
     builder.registerType<ServiceImplementation>()
-        .named<IService>("name");
+        .named<IMyService>("name");
 
     ASSERT_THROW(
         builder.registerType<ServiceImplementation>()
-        .named<IService>("name"),
+        .named<IMyService>("name"),
         DuplicateDependencyException
         );
 }
@@ -135,13 +135,13 @@ TEST(DIContainerTests, RegisterDependencyWithSameNameAndTypeAnd_InstanciatesLast
     ContainerBuilder builder;
 
     builder.registerType<ServiceImplementation>()
-        .named<IService>("name");
+        .named<IMyService>("name");
 
     builder.registerType<ServiceImplementation2>()
-        .named<IService>("name");
+        .named<IMyService>("name");
 
     auto resolver = builder.build();
-    auto obj = resolver->resolveNamed<IService>( "name" );
+    auto obj = resolver->resolveNamed<IMyService>( "name" );
     
     ASSERT_NE(std::dynamic_pointer_cast<ServiceImplementation2>(obj), nullptr);
 }
@@ -151,13 +151,13 @@ TEST(DIContainerTests, RegisteredNamedAndUnnamedDependency_Succeeds)
     ContainerBuilder builder;
 
     builder.registerType<ServiceImplementation>()
-        .as<IService>();
+        .as<IMyService>();
 
     builder.registerType<ServiceImplementation2>()
-        .named<IService>("name2");
+        .named<IMyService>("name2");
 
     builder.registerType<ServiceImplementation3>()
-        .named<IService>("name3");
+        .named<IMyService>("name3");
 
 }
 
@@ -166,24 +166,24 @@ TEST(DIContainerTests, ResolveNamedAndUnnamedTypes_InstanciateCorrectly)
     ContainerBuilder builder;
 
     builder.registerType<ServiceImplementation>()
-        .as<IService>();
+        .as<IMyService>();
 
     builder.registerType<ServiceImplementation2>()
-        .named<IService>("name2");
+        .named<IMyService>("name2");
 
     builder.registerType<ServiceImplementation3>()
-        .named<IService>("name3");
+        .named<IMyService>("name3");
 
     auto resolver = builder.build();
 
     auto obj = std::dynamic_pointer_cast<ServiceImplementation>(
-        resolver->resolve<IService>()
+        resolver->resolve<IMyService>()
         );
     auto obj2 = std::dynamic_pointer_cast<ServiceImplementation2>(
-        resolver->resolveNamed<IService>("name2")
+        resolver->resolveNamed<IMyService>("name2")
         );
     auto obj3 = std::dynamic_pointer_cast<ServiceImplementation3>(
-        resolver->resolveNamed<IService>("name3")
+        resolver->resolveNamed<IMyService>("name3")
         );
 
     ASSERT_NE(obj, nullptr);
@@ -195,11 +195,11 @@ TEST(DIContainerTests, ResolveImplementationWithDependencyByCode_Succeeds)
 {
     ContainerBuilder builder;
     builder.registerType<ServiceImplementation>()
-        .as<IService>();
+        .as<IMyService>();
 
     auto create = [](Container &r){
         return std::make_shared<DependentServiceImplementation>(
-            r.resolve<IService>()
+            r.resolve<IMyService>()
             ); };
 
     builder.registerType<DependentServiceImplementation>(create)
@@ -216,9 +216,9 @@ TEST(DIContainerTests, ResolveImplementationWithDependency_Succeeds)
     ContainerBuilder builder;
 
     builder.registerType<ServiceImplementation>()
-        .as<IService>();
+        .as<IMyService>();
 
-    builder.registerType<DependentServiceImplementation>(Injector<IService>())
+    builder.registerType<DependentServiceImplementation>(Injector<IMyService>())
         .as<IAnotherService>();
 
     auto resolver = builder.build();
@@ -233,12 +233,12 @@ TEST(DIContainerTests, RegisterAndResolveInstance_ReturnsSameInstance)
     auto instance = std::make_shared<ServiceImplementation>();
 
     builder.registerInstance(instance)
-        .as<IService>();
+        .as<IMyService>();
 
     auto resolver = builder.build();
 
-    auto obj1 = resolver->resolve< IService >();
-    auto obj2 = resolver->resolve< IService >();
+    auto obj1 = resolver->resolve< IMyService >();
+    auto obj2 = resolver->resolve< IMyService >();
 
     ASSERT_EQ(instance, obj1);
     ASSERT_EQ(instance, obj2);
@@ -249,12 +249,12 @@ TEST(DIContainerTests, SingleInstanceLifetime_ReturnsSameInstance)
     ContainerBuilder builder;
 
     builder.registerType<ServiceImplementation>()
-        .as<IService>().singleInstance();
+        .as<IMyService>().singleInstance();
 
     auto resolver = builder.build();
 
-    auto obj1 = resolver->resolve< IService >();
-    auto obj2 = resolver->resolve< IService >();
+    auto obj1 = resolver->resolve< IMyService >();
+    auto obj2 = resolver->resolve< IMyService >();
 
     ASSERT_EQ(obj1, obj2);
 }
@@ -264,13 +264,13 @@ TEST(DIContainerTests, SingleInstanceLifetimeFromDifferentBuilder_ReturnsDiffere
     ContainerBuilder builder;
 
     builder.registerType<ServiceImplementation>()
-        .as<IService>().singleInstance();
+        .as<IMyService>().singleInstance();
 
     auto resolver1 = builder.build();
     auto resolver2 = builder.build();
 
-    auto obj1 = resolver1->resolve< IService >();
-    auto obj2 = resolver2->resolve< IService >();
+    auto obj1 = resolver1->resolve< IMyService >();
+    auto obj2 = resolver2->resolve< IMyService >();
 
     ASSERT_NE(obj1, obj2);
 }
@@ -285,15 +285,15 @@ TEST(DIContainerTests, RegisterAndResolveKeyedInstance_Succeeds)
     ContainerBuilder builder;  
 
     builder.registerType<ServiceImplementation>()
-        .keyed<IService>(ServiceType::one);
+        .keyed<IMyService>(ServiceType::one);
 
     builder.registerType<ServiceImplementation2>()
-        .keyed<IService>(ServiceType::two);
+        .keyed<IMyService>(ServiceType::two);
 
     auto resolver = builder.build();
 
-    auto obj1 = resolver->resolveKeyed< IService >(ServiceType::one);
-    auto obj2 = resolver->resolveKeyed< IService >(ServiceType::two);
+    auto obj1 = resolver->resolveKeyed< IMyService >(ServiceType::one);
+    auto obj2 = resolver->resolveKeyed< IMyService >(ServiceType::two);
 
     ASSERT_TRUE(std::dynamic_pointer_cast<ServiceImplementation>(obj1));
     ASSERT_TRUE(std::dynamic_pointer_cast<ServiceImplementation2>(obj2));

@@ -33,5 +33,14 @@
     <ClInclude Include="internal\RegistrationKey.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="internal\IService.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\TypedService.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\KeyedService.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

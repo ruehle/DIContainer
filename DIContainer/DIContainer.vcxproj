@@ -67,9 +67,12 @@
     <ClInclude Include="Container.h" />
     <ClInclude Include="Injector.h" />
     <ClInclude Include="ContainerBuilder.h" />
+    <ClInclude Include="internal\IService.h" />
+    <ClInclude Include="internal\KeyedService.h" />
     <ClInclude Include="internal\RegistrationData.h" />
     <ClInclude Include="internal\RegistrationHelper.h" />
     <ClInclude Include="internal\RegistrationKey.h" />
+    <ClInclude Include="internal\TypedService.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

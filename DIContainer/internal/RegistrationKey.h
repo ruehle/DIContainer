@@ -1,82 +1,25 @@
 #pragma once
 
 #include <typeinfo>
+#include "IService.h"
 
 namespace DIContainer
 {
     class RegistrationInfo;
 
-    class IServiceTyper
-    {
-    public:
-        virtual ~IServiceTyper() = default;
-
-        virtual const std::type_info &typeInfo() const = 0;
-        virtual bool operator==(const IServiceTyper &key) const = 0;
-
-        virtual size_t hash_code() const = 0;
-    };
-
-    template<class T>
-    class TypedService : public IServiceTyper
-    {
-    public:
-        virtual const std::type_info &typeInfo() const override { return typeid(T); }
-
-        virtual bool operator==(const IServiceTyper &key) const override
-        {     
-            return dynamic_cast<const TypedService<T>*>(&key) != nullptr;
-        };
-
-        virtual size_t hash_code() const override
-        {
-            return typeInfo().hash_code();
-        }
-
-    };
-
-    template<class T, class KeyType>
-    class KeyedService : public IServiceTyper
-    {
-    public:
-        explicit KeyedService(const KeyType &key)
-            : key(key) {}
-
-        virtual const std::type_info &typeInfo() const override { return typeid(T); }
-
-        virtual bool operator==(const IServiceTyper &info) const override
-        {
-            auto keyed = dynamic_cast<const KeyedService<T, KeyType>*>(&info);
-            if( keyed == nullptr)
-                return false;
-            return key == keyed->key;
-        };
-
-        virtual size_t hash_code() const override
-        {
-            auto typeHash = typeInfo().hash_code();
-            auto keyTypeHash = typeid(KeyType).hash_code();
-            auto keyValueHash = std::hash<KeyType>()(key);
-            
-            return ((typeHash
-                ^ (keyTypeHash << 1)) >> 1)
-                ^ (keyValueHash << 1);
-        }
+ 
 
 
-    private:
 
-        KeyType key;
-    };
 
 
     class RegistrationKey
     {
     public:
-        explicit RegistrationKey(std::shared_ptr<IServiceTyper> info)
+        explicit RegistrationKey(std::shared_ptr<IService> info)
             : infoPtr(info), info(*info) {}
 
-        static RegistrationKey forLookup(const IServiceTyper &info)
+        static RegistrationKey forLookup(const IService &info)
         {
             return RegistrationKey(info);
         }
@@ -89,11 +32,11 @@ namespace DIContainer
         }
 
     private:
-        explicit RegistrationKey(const IServiceTyper &info)
+        explicit RegistrationKey(const IService &info)
             : info(info) {}
 
-        std::shared_ptr<IServiceTyper> infoPtr;
-        const IServiceTyper &info;
+        std::shared_ptr<IService> infoPtr;
+        const IService &info;
     };
 
 }
