@@ -28,7 +28,7 @@ namespace DIContainer
             return dynamic_cast<const TypedService<T>*>(&key) != nullptr;
         };
 
-        virtual size_t hash_code() const
+        virtual size_t hash_code() const override
         {
             return typeInfo().hash_code();
         }
@@ -39,7 +39,7 @@ namespace DIContainer
     class KeyedService : public IServiceTyper
     {
     public:
-        KeyedService(const KeyType &key)
+        explicit KeyedService(const KeyType &key)
             : key(key) {}
 
         virtual const std::type_info &typeInfo() const override { return typeid(T); }
@@ -52,7 +52,7 @@ namespace DIContainer
             return key == keyed->key;
         };
 
-        virtual size_t hash_code() const
+        virtual size_t hash_code() const override
         {
             auto typeHash = typeInfo().hash_code();
             auto keyTypeHash = typeid(KeyType).hash_code();
@@ -73,7 +73,7 @@ namespace DIContainer
     class RegistrationKey
     {
     public:
-        RegistrationKey(std::shared_ptr<IServiceTyper> info)
+        explicit RegistrationKey(std::shared_ptr<IServiceTyper> info)
             : infoPtr(info), info(*info) {}
 
         static RegistrationKey forLookup(const IServiceTyper &info)
@@ -89,7 +89,7 @@ namespace DIContainer
         }
 
     private:
-        RegistrationKey(const IServiceTyper &info)
+        explicit RegistrationKey(const IServiceTyper &info)
             : info(info) {}
 
         std::shared_ptr<IServiceTyper> infoPtr;
@@ -106,10 +106,6 @@ namespace std
         std::size_t operator()(const DIContainer::RegistrationKey& k) const
         {
             return k.hash_code();
-
-            //return ((hash<std::type_info>()(k.typeInfo());
-                //^ (hash<string>()(k.second) << 1)) >> 1)
-                //^ (hash<int>()(k.third) << 1);
         }
     };
 }
