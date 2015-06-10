@@ -26,7 +26,7 @@ namespace DIContainer
                 "Registered type does not implement interface");
 
             containerBuilder.wireInterfaceInternal(
-                std::make_shared<TypedRegistration<InterfaceType>>(),
+                std::make_shared<TypedService<InterfaceType>>(),
                 registration->id()
                 );
 
@@ -41,7 +41,7 @@ namespace DIContainer
                 "Registered type does no implement interface");
 
             containerBuilder.wireInterfaceInternal(
-                std::make_shared<KeyedRegistration<InterfaceType, KeyType>>(key),
+                std::make_shared<KeyedService<InterfaceType, KeyType>>(key),
                 registration->id());
             return *this;
         }

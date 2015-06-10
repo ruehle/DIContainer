@@ -39,7 +39,7 @@ namespace DIContainer
         template<class T>
         std::shared_ptr<T> resolve()
         {
-            TypedRegistration<T> reg;
+            TypedService<T> reg;
             auto creatorIter = dependencies.find(RegistrationKey::forLookup(reg));
             if (creatorIter == dependencies.end())
                 throw UnresolvedDependencyException();
@@ -49,7 +49,7 @@ namespace DIContainer
         template<class T, class KeyType>
         std::shared_ptr<T> resolveKeyed(const KeyType &key)
         {
-            KeyedRegistration<T,KeyType> reg(key);
+            KeyedService<T,KeyType> reg(key);
             auto creatorIter = dependencies.find(RegistrationKey::forLookup(reg));
             if (creatorIter == dependencies.end())
                 throw UnresolvedDependencyException();

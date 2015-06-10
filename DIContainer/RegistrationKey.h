@@ -6,26 +6,26 @@ namespace DIContainer
 {
     class RegistrationInfo;
 
-    class IRegistrationInfo
+    class IServiceTyper
     {
     public:
-        virtual ~IRegistrationInfo() = default;
+        virtual ~IServiceTyper() = default;
 
         virtual const std::type_info &typeInfo() const = 0;
-        virtual bool operator==(const IRegistrationInfo &key) const = 0;
+        virtual bool operator==(const IServiceTyper &key) const = 0;
 
         virtual size_t hash_code() const = 0;
     };
 
     template<class T>
-    class TypedRegistration : public IRegistrationInfo
+    class TypedService : public IServiceTyper
     {
     public:
         virtual const std::type_info &typeInfo() const override { return typeid(T); }
 
-        virtual bool operator==(const IRegistrationInfo &key) const override
+        virtual bool operator==(const IServiceTyper &key) const override
         {     
-            return dynamic_cast<const TypedRegistration<T>*>(&key) != nullptr;
+            return dynamic_cast<const TypedService<T>*>(&key) != nullptr;
         };
 
         virtual size_t hash_code() const
@@ -36,17 +36,17 @@ namespace DIContainer
     };
 
     template<class T, class KeyType>
-    class KeyedRegistration : public IRegistrationInfo
+    class KeyedService : public IServiceTyper
     {
     public:
-        KeyedRegistration(const KeyType &key)
+        KeyedService(const KeyType &key)
             : key(key) {}
 
         virtual const std::type_info &typeInfo() const override { return typeid(T); }
 
-        virtual bool operator==(const IRegistrationInfo &info) const override
+        virtual bool operator==(const IServiceTyper &info) const override
         {
-            auto keyed = dynamic_cast<const KeyedRegistration<T, KeyType>*>(&info);
+            auto keyed = dynamic_cast<const KeyedService<T, KeyType>*>(&info);
             if( keyed == nullptr)
                 return false;
             return key == keyed->key;
@@ -73,10 +73,10 @@ namespace DIContainer
     class RegistrationKey
     {
     public:
-        RegistrationKey(std::shared_ptr<IRegistrationInfo> info)
+        RegistrationKey(std::shared_ptr<IServiceTyper> info)
             : infoPtr(info), info(*info) {}
 
-        static RegistrationKey forLookup(const IRegistrationInfo &info)
+        static RegistrationKey forLookup(const IServiceTyper &info)
         {
             return RegistrationKey(info);
         }
@@ -89,11 +89,11 @@ namespace DIContainer
         }
 
     private:
-        RegistrationKey(const IRegistrationInfo &info)
+        RegistrationKey(const IServiceTyper &info)
             : info(info) {}
 
-        std::shared_ptr<IRegistrationInfo> infoPtr;
-        const IRegistrationInfo &info;
+        std::shared_ptr<IServiceTyper> infoPtr;
+        const IServiceTyper &info;
     };
 
 }

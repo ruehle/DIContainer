@@ -81,7 +81,7 @@ namespace DIContainer
 
         bool duplicateCheck = false;
 
-        void wireInterfaceInternal( std::shared_ptr<IRegistrationInfo> registration, size_t id )
+        void wireInterfaceInternal( std::shared_ptr<IServiceTyper> registration, size_t id )
         {
             if (dependencies.count(RegistrationKey(registration)) > 0 && duplicateCheck )
                 throw DuplicateDependencyException();
