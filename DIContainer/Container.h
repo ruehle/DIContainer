@@ -6,6 +6,7 @@
 #include <typeindex>
 #include <map>
 #include "RegistrationData.h"
+#include "RegistrationKey.h"
 
 
 namespace DIContainer
@@ -27,9 +28,10 @@ namespace DIContainer
     {
     public:
 
-        Container(std::vector<RegistrationData> registeredTypes, 
-            std::unordered_map < std::type_index,
-           std::size_t
+        Container(std::vector<RegistrationData> registeredTypes,
+            std::unordered_map <
+            RegistrationKey,
+            std::size_t
             > dependencies,
             std::map < std::pair<std::string, std::type_index>,
             std::size_t
@@ -39,7 +41,8 @@ namespace DIContainer
         template<class T>
         std::shared_ptr<T> resolve()
         {
-            auto creatorIter = dependencies.find(typeid(T));
+            TypedRegistration<T> reg;
+            auto creatorIter = dependencies.find(RegistrationKey(reg));
             if (creatorIter == dependencies.end())
                 throw UnresolvedDependencyException();
             return std::static_pointer_cast<T>(registeredTypes[creatorIter->second].build(*this));
@@ -61,7 +64,7 @@ namespace DIContainer
         std::vector<RegistrationData> registeredTypes;
 
         std::unordered_map <
-            std::type_index,
+            RegistrationKey,
             std::size_t
         > dependencies;
 

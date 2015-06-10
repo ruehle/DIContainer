@@ -10,6 +10,7 @@
 #include "RegistrationHelper.h"
 #include "Container.h"
 #include "RegistrationData.h"
+#include "RegistrationKey.h"
 
 namespace DIContainer
 {
@@ -83,9 +84,10 @@ namespace DIContainer
         template<class T>
         void wireInterfaceInternal(RegistrationData *registration)
         {
-            if (dependencies.count(typeid(T)) > 0 && duplicateCheck )
+            auto reg = std::make_shared<TypedRegistration<T>>();            
+            if (dependencies.count(RegistrationKey(reg)) > 0 && duplicateCheck )
                 throw DuplicateDependencyException();
-            dependencies[typeid(T)] = registration->id();
+            dependencies[RegistrationKey(reg)] = registration->id();
         }
 
         template<class T>
@@ -107,7 +109,7 @@ namespace DIContainer
         }
 
         std::unordered_map <
-            std::type_index,
+            RegistrationKey,
             std::size_t
         > dependencies;
 
