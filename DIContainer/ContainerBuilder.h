@@ -76,11 +76,11 @@ namespace DIContainer
             auto container = std::make_shared<Container>();
             
             CopyHelper copyManager;
-            for (auto & i : dependencies) {
-                auto &reg = registeredTypes[i.second];
+            for (auto & dep : dependencies) {
 
+                auto newInstance = copyManager.getCopy(dep.second);
                 container->dependencies.insert(
-                    std::make_pair(i.first, copyManager.getCopy(i.second, reg))
+                    std::make_pair(dep.first, newInstance)
                     );
             }
             return container;
@@ -90,47 +90,51 @@ namespace DIContainer
 
         bool duplicateCheck = false;
 
-        void wireInterfaceInternal(std::shared_ptr<IService> registration, size_t id)
+        void wireInterfaceInternal(
+            std::shared_ptr<IService> registrationInfo, 
+            std::shared_ptr<RegistrationData> registrationData)
         {
-            if (dependencies.count(RegistrationKey(registration)) > 0 && duplicateCheck)
+            RegistrationKey key(registrationInfo);
+
+            if (dependencies.count(key) > 0 && duplicateCheck)
                 throw DuplicateDependencyException();
-            dependencies[RegistrationKey(registration)] = id;
+            dependencies[RegistrationKey(registrationInfo)] = registrationData;
         }
 
-        RegistrationData *createRegistration(
+        std::shared_ptr<RegistrationData> createRegistration(
             RegistrationData::UntypedFactory creator
             )
         {
-            registeredTypes.push_back(RegistrationData(registeredTypes.size(), creator));
-            return &registeredTypes.back();
+            return std::make_shared<RegistrationData>(creator);
         }
 
         std::unordered_map <
             RegistrationKey,
-            std::size_t
+            std::shared_ptr<RegistrationData>
         > dependencies;
 
-        std::vector<RegistrationData> registeredTypes;
         template<class U>
         friend class RegistrationHelper;
 
         class CopyHelper
         {
         public:
-            std::shared_ptr<RegistrationData> getCopy(size_t key, RegistrationData &registration)
+            std::shared_ptr<RegistrationData> getCopy(std::shared_ptr<RegistrationData> registration)
             {
-                auto exists = copiedInstances.find(key);
+                auto exists = copiedInstances.find(registration);
                 if (exists == copiedInstances.end())
                 {
-                    auto copy = std::make_shared<RegistrationData>(registration);
-                    copiedInstances[key] = copy;
+                    auto copy = std::make_shared<RegistrationData>(*registration);
+                    copiedInstances.insert( std::make_pair(registration,  copy) );
                     return copy;
                 }
                 auto item = exists->second;
                 return item;
             }
         private:
-            std::unordered_map<size_t, std::shared_ptr<RegistrationData>> copiedInstances;
+            std::unordered_map<
+                std::shared_ptr<RegistrationData>,
+                std::shared_ptr<RegistrationData>> copiedInstances;
         };
 
     };

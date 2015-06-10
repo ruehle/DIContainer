@@ -1,6 +1,8 @@
 #pragma once
+
 #include "RegistrationData.h"
-#include "RegistrationKey.h"
+#include "TypedService.h"
+#include "KeyedService.h"
 
 namespace DIContainer
 {
@@ -14,8 +16,9 @@ namespace DIContainer
     {
     public:
         explicit RegistrationHelper(
-            ContainerBuilder &containerBuilder, 
-            RegistrationData *registrationData)
+            ContainerBuilder &containerBuilder,
+            std::shared_ptr<RegistrationData> registrationData
+            )
             : containerBuilder(containerBuilder), registration(registrationData) {}
 
         template<class InterfaceType>
@@ -27,7 +30,7 @@ namespace DIContainer
 
             containerBuilder.wireInterfaceInternal(
                 std::make_shared<TypedService<InterfaceType>>(),
-                registration->id()
+                registration
                 );
 
             return *this;
@@ -42,24 +45,24 @@ namespace DIContainer
 
             containerBuilder.wireInterfaceInternal(
                 std::make_shared<KeyedService<InterfaceType, KeyType>>(key),
-                registration->id());
+                registration);
             return *this;
         }
 
         template<class InterfaceType>
         RegistrationHelper &named(const std::string &name)
         {
-            return keyed<InterfaceType>(name);            
+            return keyed<InterfaceType>(name);
         }
 
 
         void singleInstance()
-        {     
+        {
             registration->setLifetimeScope(LifetimeScope::SingleInstance);
         }
 
         ContainerBuilder &containerBuilder;
-        RegistrationData *registration;
+        std::shared_ptr<RegistrationData> registration;
     };
 
 }
