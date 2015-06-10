@@ -32,11 +32,9 @@ namespace DIContainer
             std::unordered_map <
             RegistrationKey,
             std::size_t
-            > dependencies,
-            std::map < std::pair<std::string, std::type_index>,
-            std::size_t
-            > namedDependencies)
-            : registeredTypes(registeredTypes), dependencies(dependencies), namedDependencies(namedDependencies) {}
+            > dependencies
+            )
+            : registeredTypes(registeredTypes), dependencies(dependencies) {}
 
         template<class T>
         std::shared_ptr<T> resolve()
@@ -51,9 +49,10 @@ namespace DIContainer
         template<class T>
         std::shared_ptr<T> resolve(const std::string &name)
         {
+            KeyedRegistration<T, std::string> reg(name);
             auto key = std::make_pair(name, std::type_index(typeid(T)));
-            auto creatorIter = namedDependencies.find(key);
-            if (creatorIter == namedDependencies.end())
+            auto creatorIter = dependencies.find(RegistrationKey::forLookup(reg));
+            if (creatorIter == dependencies.end())
                 throw UnresolvedDependencyException();
             return std::static_pointer_cast<T>(registeredTypes[creatorIter->second].build(*this));
         }
@@ -67,12 +66,6 @@ namespace DIContainer
             RegistrationKey,
             std::size_t
         > dependencies;
-
-        std::map <
-            std::pair<std::string, std::type_index>,
-            std::size_t
-        > namedDependencies;
-
 
     };
 

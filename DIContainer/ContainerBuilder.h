@@ -74,7 +74,7 @@ namespace DIContainer
 
         std::shared_ptr<Container> build()
         {
-            return std::make_shared<Container>(registeredTypes, dependencies, namedDependencies);
+            return std::make_shared<Container>(registeredTypes, dependencies);
         }
 
     private:
@@ -93,11 +93,10 @@ namespace DIContainer
         template<class T>
         void wireInterfaceInternal(const std::string &name, RegistrationData *registration )
         {
-            auto key = std::make_pair(name, std::type_index(typeid(T)));
-            if (namedDependencies.count(key) > 0 && duplicateCheck )
+            auto reg = std::make_shared<KeyedRegistration<T, std::string>>(name);
+            if (dependencies.count(RegistrationKey(reg)) > 0 && duplicateCheck)
                 throw DuplicateDependencyException();
-
-            namedDependencies[key] = registration->id();
+            dependencies[RegistrationKey(reg)] = registration->id();
         }
 
         RegistrationData *createRegistration( 
@@ -112,11 +111,6 @@ namespace DIContainer
             RegistrationKey,
             std::size_t
         > dependencies;
-
-        std::map <
-            std::pair<std::string, std::type_index>,
-            std::size_t
-        > namedDependencies;
 
         std::vector<RegistrationData> registeredTypes;
         template<class U>
