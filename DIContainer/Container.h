@@ -18,6 +18,8 @@ namespace DIContainer
             : std::logic_error("A dependency could not be resolved")
         {}
     };
+    
+    class ContainerBuilder;
 
     /// Class to resolve dependencies.
     ///
@@ -28,13 +30,7 @@ namespace DIContainer
     {
     public:
 
-        Container(std::vector<RegistrationData> registeredTypes,
-            std::unordered_map <
-            RegistrationKey,
-            std::size_t
-            > dependencies
-            )
-            : registeredTypes(registeredTypes), dependencies(dependencies) {}
+        Container() {}
 
         template<class T>
         std::shared_ptr<T> resolve()
@@ -58,11 +54,9 @@ namespace DIContainer
 
     private:
 
-        std::vector<RegistrationData> registeredTypes;
-
         std::unordered_map <
             RegistrationKey,
-            std::size_t
+            std::shared_ptr<RegistrationData>
         > dependencies;
 
         RegistrationData &lookupRegistration(const IService &reg)
@@ -70,11 +64,11 @@ namespace DIContainer
             auto iter = dependencies.find(RegistrationKey::forLookup(reg));
             if (iter == dependencies.end())
                 throw UnresolvedDependencyException();
-            return registeredTypes[iter->second];
+            return *iter->second;
         }
 
 
-
+        friend class ContainerBuilder;
     };
 
 }

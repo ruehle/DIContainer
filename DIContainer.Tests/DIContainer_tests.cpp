@@ -259,6 +259,24 @@ TEST(DIContainerTests, SingleInstanceLifetime_ReturnsSameInstance)
     ASSERT_EQ(obj1, obj2);
 }
 
+TEST(DIContainerTests, SingleInstanceLifetimeWithDifferentRegistration_ReturnsSameInstance)
+{
+    ContainerBuilder builder;
+
+    builder.registerType<ServiceImplementation>()
+        .as<IMyService>()
+        .named<IMyService>("name")
+        .singleInstance();
+
+    auto resolver = builder.build();
+
+    auto obj1 = resolver->resolve< IMyService >();
+    auto obj2 = resolver->resolveNamed< IMyService >("name");
+
+    ASSERT_EQ(obj1, obj2);
+}
+
+
 TEST(DIContainerTests, SingleInstanceLifetimeFromDifferentBuilder_ReturnsDifferentInstance)
 {
     ContainerBuilder builder;
