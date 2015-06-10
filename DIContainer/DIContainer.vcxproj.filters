@@ -18,19 +18,19 @@
     <ClInclude Include="Injector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RegistrationHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ContainerBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Container.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RegistrationData.h">
+    <ClInclude Include="internal\RegistrationData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RegistrationKey.h">
+    <ClInclude Include="internal\RegistrationHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="internal\RegistrationKey.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

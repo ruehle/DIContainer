@@ -4,13 +4,12 @@
 #include <functional>
 #include <memory>
 #include <unordered_map>
-#include <typeindex>
-#include <map>
 #include "Injector.h"
-#include "RegistrationHelper.h"
+#include "internal/RegistrationHelper.h"
+#include "internal/RegistrationData.h"
+#include "internal/RegistrationKey.h"
+
 #include "Container.h"
-#include "RegistrationData.h"
-#include "RegistrationKey.h"
 
 namespace DIContainer
 {

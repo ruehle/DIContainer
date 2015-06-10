@@ -3,10 +3,8 @@
 #include <stdexcept>
 #include <memory>
 #include <unordered_map>
-#include <typeindex>
-#include <map>
-#include "RegistrationData.h"
-#include "RegistrationKey.h"
+#include "internal/RegistrationData.h"
+#include "internal/RegistrationKey.h"
 
 
 namespace DIContainer
