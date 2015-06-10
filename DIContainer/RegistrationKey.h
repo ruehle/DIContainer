@@ -23,9 +23,7 @@ namespace DIContainer
 
         virtual bool operator==(const IRegistrationInfo &key) const override
         {     
-            return typeInfo() == key.typeInfo();
-            //const IRegistrationInfo *ptr = &key;
-            //return dynamic_cast<TypedRegistration<T>>(ptr) != nullptr;
+            return dynamic_cast<const TypedRegistration<T>*>(&key) != nullptr;
         };
     };
 
