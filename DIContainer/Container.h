@@ -42,7 +42,7 @@ namespace DIContainer
         std::shared_ptr<T> resolve()
         {
             TypedRegistration<T> reg;
-            auto creatorIter = dependencies.find(RegistrationKey(reg));
+            auto creatorIter = dependencies.find(RegistrationKey::forLookup(reg));
             if (creatorIter == dependencies.end())
                 throw UnresolvedDependencyException();
             return std::static_pointer_cast<T>(registeredTypes[creatorIter->second].build(*this));

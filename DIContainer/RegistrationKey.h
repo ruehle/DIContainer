@@ -33,8 +33,10 @@ namespace DIContainer
         RegistrationKey(std::shared_ptr<IRegistrationInfo> info)
             : infoPtr(info), info(*info) {}
 
-        RegistrationKey( const IRegistrationInfo &info )
-            : info(info) {}
+        static RegistrationKey forLookup(const IRegistrationInfo &info)
+        {
+            return RegistrationKey(info);
+        }
 
         bool operator==(const RegistrationKey &key) const { return info == key.info; }
         size_t hash_code() const
@@ -43,6 +45,9 @@ namespace DIContainer
         }
 
     private:
+        RegistrationKey(const IRegistrationInfo &info)
+            : info(info) {}
+
         std::shared_ptr<IRegistrationInfo> infoPtr;
         const IRegistrationInfo &info;
     };
