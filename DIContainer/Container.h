@@ -39,21 +39,15 @@ namespace DIContainer
         template<class T>
         std::shared_ptr<T> resolve()
         {
-            TypedService<T> reg;
-            auto creatorIter = dependencies.find(RegistrationKey::forLookup(reg));
-            if (creatorIter == dependencies.end())
-                throw UnresolvedDependencyException();
-            return std::static_pointer_cast<T>(registeredTypes[creatorIter->second].build(*this));
+            auto &registarion = lookupRegistration(TypedService<T>());
+            return std::static_pointer_cast<T>(registarion.build(*this));
         }
 
         template<class T, class KeyType>
         std::shared_ptr<T> resolveKeyed(const KeyType &key)
         {
-            KeyedService<T,KeyType> reg(key);
-            auto creatorIter = dependencies.find(RegistrationKey::forLookup(reg));
-            if (creatorIter == dependencies.end())
-                throw UnresolvedDependencyException();
-            return std::static_pointer_cast<T>(registeredTypes[creatorIter->second].build(*this));
+            auto &registarion = lookupRegistration(KeyedService<T, KeyType>(key));
+            return std::static_pointer_cast<T>(registarion.build(*this));
         }
 
         template<class T>
@@ -61,7 +55,6 @@ namespace DIContainer
         {
             return resolveKeyed<T>(name);
         }
-
 
     private:
 
@@ -71,6 +64,16 @@ namespace DIContainer
             RegistrationKey,
             std::size_t
         > dependencies;
+
+        RegistrationData &lookupRegistration(const IService &reg)
+        {
+            auto iter = dependencies.find(RegistrationKey::forLookup(reg));
+            if (iter == dependencies.end())
+                throw UnresolvedDependencyException();
+            return registeredTypes[iter->second];
+        }
+
+
 
     };
 
