@@ -46,15 +46,20 @@ namespace DIContainer
             return std::static_pointer_cast<T>(registeredTypes[creatorIter->second].build(*this));
         }
 
-        template<class T>
-        std::shared_ptr<T> resolve(const std::string &name)
+        template<class T, class KeyType>
+        std::shared_ptr<T> resolveKeyed(const KeyType &key)
         {
-            KeyedRegistration<T, std::string> reg(name);
-            auto key = std::make_pair(name, std::type_index(typeid(T)));
+            KeyedRegistration<T,KeyType> reg(key);
             auto creatorIter = dependencies.find(RegistrationKey::forLookup(reg));
             if (creatorIter == dependencies.end())
                 throw UnresolvedDependencyException();
             return std::static_pointer_cast<T>(registeredTypes[creatorIter->second].build(*this));
+        }
+
+        template<class T>
+        std::shared_ptr<T> resolveNamed(const std::string &name)
+        {
+            return resolveKeyed<T>(name);
         }
 
 

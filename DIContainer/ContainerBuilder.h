@@ -81,22 +81,11 @@ namespace DIContainer
 
         bool duplicateCheck = false;
 
-        template<class T>
-        void wireInterfaceInternal(RegistrationData *registration)
+        void wireInterfaceInternal( std::shared_ptr<IRegistrationInfo> registration, size_t id )
         {
-            auto reg = std::make_shared<TypedRegistration<T>>();            
-            if (dependencies.count(RegistrationKey(reg)) > 0 && duplicateCheck )
+            if (dependencies.count(RegistrationKey(registration)) > 0 && duplicateCheck )
                 throw DuplicateDependencyException();
-            dependencies[RegistrationKey(reg)] = registration->id();
-        }
-
-        template<class T>
-        void wireInterfaceInternal(const std::string &name, RegistrationData *registration )
-        {
-            auto reg = std::make_shared<KeyedRegistration<T, std::string>>(name);
-            if (dependencies.count(RegistrationKey(reg)) > 0 && duplicateCheck)
-                throw DuplicateDependencyException();
-            dependencies[RegistrationKey(reg)] = registration->id();
+            dependencies[RegistrationKey(registration)] = id;
         }
 
         RegistrationData *createRegistration( 

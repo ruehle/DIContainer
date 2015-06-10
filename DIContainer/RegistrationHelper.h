@@ -1,5 +1,6 @@
 #pragma once
 #include "RegistrationData.h"
+#include "RegistrationKey.h"
 
 namespace DIContainer
 {
@@ -24,21 +25,33 @@ namespace DIContainer
                 std::is_base_of<InterfaceType, ImplementationType>::value,
                 "Registered type does not implement interface");
 
-            containerBuilder.wireInterfaceInternal<InterfaceType>(registration);
+            containerBuilder.wireInterfaceInternal(
+                std::make_shared<TypedRegistration<InterfaceType>>(),
+                registration->id()
+                );
 
+            return *this;
+        }
+
+        template<class InterfaceType, class KeyType>
+        RegistrationHelper &keyed(const KeyType &key)
+        {
+            static_assert(
+                std::is_base_of<InterfaceType, ImplementationType>::value,
+                "Registered type does no implement interface");
+
+            containerBuilder.wireInterfaceInternal(
+                std::make_shared<KeyedRegistration<InterfaceType, KeyType>>(key),
+                registration->id());
             return *this;
         }
 
         template<class InterfaceType>
         RegistrationHelper &named(const std::string &name)
         {
-            static_assert(
-                std::is_base_of<InterfaceType, ImplementationType>::value,
-                "Registered type does no implement interface");
-
-            containerBuilder.wireInterfaceInternal<InterfaceType>(name, registration);
-            return *this;
+            return keyed<InterfaceType>(name);            
         }
+
 
         void singleInstance()
         {     

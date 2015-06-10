@@ -141,7 +141,7 @@ TEST(DIContainerTests, RegisterDependencyWithSameNameAndTypeAnd_InstanciatesLast
         .named<IService>("name");
 
     auto resolver = builder.build();
-    auto obj = resolver->resolve<IService>( "name" );
+    auto obj = resolver->resolveNamed<IService>( "name" );
     
     ASSERT_NE(std::dynamic_pointer_cast<ServiceImplementation2>(obj), nullptr);
 }
@@ -176,9 +176,15 @@ TEST(DIContainerTests, ResolveNamedAndUnnamedTypes_InstanciateCorrectly)
 
     auto resolver = builder.build();
 
-    auto obj = std::dynamic_pointer_cast<ServiceImplementation>(resolver->resolve<IService>());
-    auto obj2 = std::dynamic_pointer_cast<ServiceImplementation2>(resolver->resolve<IService>("name2"));
-    auto obj3 = std::dynamic_pointer_cast<ServiceImplementation3>(resolver->resolve<IService>("name3"));
+    auto obj = std::dynamic_pointer_cast<ServiceImplementation>(
+        resolver->resolve<IService>()
+        );
+    auto obj2 = std::dynamic_pointer_cast<ServiceImplementation2>(
+        resolver->resolveNamed<IService>("name2")
+        );
+    auto obj3 = std::dynamic_pointer_cast<ServiceImplementation3>(
+        resolver->resolveNamed<IService>("name3")
+        );
 
     ASSERT_NE(obj, nullptr);
     ASSERT_NE(obj2, nullptr);
@@ -267,4 +273,28 @@ TEST(DIContainerTests, SingleInstanceLifetimeFromDifferentBuilder_ReturnsDiffere
     auto obj2 = resolver2->resolve< IService >();
 
     ASSERT_NE(obj1, obj2);
+}
+
+enum class ServiceType
+{
+    one, two
+};
+
+TEST(DIContainerTests, RegisterAndResolveKeyedInstance_Succeeds)
+{
+    ContainerBuilder builder;  
+
+    builder.registerType<ServiceImplementation>()
+        .keyed<IService>(ServiceType::one);
+
+    builder.registerType<ServiceImplementation2>()
+        .keyed<IService>(ServiceType::two);
+
+    auto resolver = builder.build();
+
+    auto obj1 = resolver->resolveKeyed< IService >(ServiceType::one);
+    auto obj2 = resolver->resolveKeyed< IService >(ServiceType::two);
+
+    ASSERT_TRUE(std::dynamic_pointer_cast<ServiceImplementation>(obj1));
+    ASSERT_TRUE(std::dynamic_pointer_cast<ServiceImplementation2>(obj2));
 }
