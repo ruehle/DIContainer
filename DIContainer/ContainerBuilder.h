@@ -40,7 +40,7 @@ namespace DIContainer
             );
 
             return RegistrationHelper<T>(
-                *this,
+                registrationCallback(),
                 registration);
         }
 
@@ -48,15 +48,16 @@ namespace DIContainer
         RegistrationHelper<T> registerType(std::function< std::shared_ptr<T>(Container &)> creator)
         {
             return RegistrationHelper<T>(
-                *this, createRegistration(creator));
+				registrationCallback(),
+				createRegistration(creator));
         }
 
         template<class T, class... Args>
         RegistrationHelper<T> registerType(Injector<Args...> injector)
         {
             return RegistrationHelper<T>(
-                *this,
-                createRegistration([injector](Container &r) { return injector.template create<T>(r); })
+				registrationCallback(),
+				createRegistration([injector](Container &r) { return injector.template create<T>(r); })
                 );
         }
 
@@ -64,7 +65,7 @@ namespace DIContainer
         RegistrationHelper<T> registerInstance(std::shared_ptr<T> instance)
         {
             return RegistrationHelper<T>(
-                *this,
+				registrationCallback(),
                 createRegistration([instance](Container &r) { return instance; })
                 );
         }
@@ -90,16 +91,19 @@ namespace DIContainer
 
         bool duplicateCheck = false;
 
-        void wireInterfaceInternal(
-            std::shared_ptr<IService> registrationInfo, 
-            std::shared_ptr<RegistrationData> registrationData)
-        {
-            RegistrationKey key(registrationInfo);
+		std::function < void(std::shared_ptr<IService>, std::shared_ptr<RegistrationData> ) > registrationCallback()
+		{
+			return[this](
+				std::shared_ptr<IService> registrationInfo,
+				std::shared_ptr<RegistrationData> registrationData)
+			{
+				RegistrationKey key(registrationInfo);
 
-            if (dependencies.count(key) > 0 && duplicateCheck)
-                throw DuplicateDependencyException();
-            dependencies[RegistrationKey(registrationInfo)] = registrationData;
-        }
+				if (dependencies.count(key) > 0 && duplicateCheck)
+					throw DuplicateDependencyException();
+				dependencies[RegistrationKey(registrationInfo)] = registrationData;
+			};			
+		}
 
         std::shared_ptr<RegistrationData> createRegistration(
             RegistrationData::UntypedFactory creator

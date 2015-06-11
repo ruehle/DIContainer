@@ -1,25 +1,26 @@
 #pragma once
 
+#include <memory>
+#include <functional>
 #include "RegistrationData.h"
 #include "TypedService.h"
 #include "KeyedService.h"
+#include "IService.h"
 
 namespace DIContainer
 {
-    class Container;
-    class ContainerBuilder;
-
     /// Helper class to configure the container builder, for internal use
     ///
     template<class ImplementationType>
     class RegistrationHelper
     {
     public:
+
         explicit RegistrationHelper(
-            ContainerBuilder &containerBuilder,
+            std::function<void(std::shared_ptr<IService>, std::shared_ptr<RegistrationData>)> registrationCallback,
             std::shared_ptr<RegistrationData> registrationData
             )
-            : containerBuilder(containerBuilder), registration(registrationData) {}
+            : registrationCallback(registrationCallback), registration(registrationData) {}
 
         template<class InterfaceType>
         RegistrationHelper &as()
@@ -28,7 +29,7 @@ namespace DIContainer
                 std::is_base_of<InterfaceType, ImplementationType>::value,
                 "Registered type does not implement interface");
 
-            containerBuilder.wireInterfaceInternal(
+            registrationCallback(
                 std::make_shared<TypedService<InterfaceType>>(),
                 registration
                 );
@@ -43,7 +44,7 @@ namespace DIContainer
                 std::is_base_of<InterfaceType, ImplementationType>::value,
                 "Registered type does no implement interface");
 
-            containerBuilder.wireInterfaceInternal(
+            registrationCallback(
                 std::make_shared<KeyedService<InterfaceType, KeyType>>(key),
                 registration);
             return *this;
@@ -61,7 +62,8 @@ namespace DIContainer
             registration->setLifetimeScope(LifetimeScope::SingleInstance);
         }
 
-        ContainerBuilder &containerBuilder;
+    private:
+        std::function<void(std::shared_ptr<IService>, std::shared_ptr<RegistrationData>)> registrationCallback;
         std::shared_ptr<RegistrationData> registration;
     };
 
