@@ -24,11 +24,12 @@ namespace DIContainer {
         {
             auto typeHash = typeInfo().hash_code();
             auto keyTypeHash = typeid(KeyType).hash_code();
-            auto keyValueHash = std::hash<KeyType>()(key);
+            // workaround for gcc which does not provide standard hash for enum class
+            // auto keyValueHash = std::hash<KeyType>()(key);
 
             return ((typeHash
                 ^ (keyTypeHash << 1)) >> 1)
-                ^ (keyValueHash << 1);
+                ;// ^ (keyValueHash << 1);
         }
 
 
