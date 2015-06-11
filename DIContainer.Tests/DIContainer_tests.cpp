@@ -313,6 +313,6 @@ TEST(DIContainerTests, RegisterAndResolveKeyedInstance_Succeeds)
     auto obj1 = resolver->resolveKeyed< IMyService >(ServiceType::one);
     auto obj2 = resolver->resolveKeyed< IMyService >(ServiceType::two);
 
-    ASSERT_TRUE(std::dynamic_pointer_cast<ServiceImplementation>(obj1));
-    ASSERT_TRUE(std::dynamic_pointer_cast<ServiceImplementation2>(obj2));
+    ASSERT_NE(std::dynamic_pointer_cast<ServiceImplementation>(obj1), nullptr);
+    ASSERT_NE(std::dynamic_pointer_cast<ServiceImplementation2>(obj2), nullptr);
 }
