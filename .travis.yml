@@ -1,0 +1,12 @@
+language: cpp
+
+compiler:
+  - clang
+  - gcc
+ 
+before_install:
+ - sudo apt-get update
+ 
+script:
+  - cmake --build
+  - ./DIContainer.Tests
