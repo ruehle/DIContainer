@@ -4,6 +4,8 @@ features and does not require any further dependencies. For an overview on depen
 
 https://en.wikipedia.org/wiki/Dependency_injection
 
+![Travis build status](https://travis-ci.org/ruehle/DIContainer.svg?branch=master)
+
 ## Getting started
 ```cpp
 ContainerBuilder builder;
