@@ -10,6 +10,7 @@
 #include "internal/RegistrationKey.h"
 
 #include "Container.h"
+#include <mutex>
 
 namespace DIContainer
 {
@@ -48,16 +49,16 @@ namespace DIContainer
         RegistrationHelper<T> registerType(std::function< std::shared_ptr<T>(Container &)> creator)
         {
             return RegistrationHelper<T>(
-				registrationCallback(),
-				createRegistration(creator));
+                registrationCallback(),
+                createRegistration(creator));
         }
 
         template<class T, class... Args>
         RegistrationHelper<T> registerType(Injector<Args...> injector)
         {
             return RegistrationHelper<T>(
-				registrationCallback(),
-				createRegistration([injector](Container &r) { return injector.template create<T>(r); })
+                registrationCallback(),
+                createRegistration([injector](Container &r) { return injector.template create<T>(r); })
                 );
         }
 
@@ -65,7 +66,7 @@ namespace DIContainer
         RegistrationHelper<T> registerInstance(std::shared_ptr<T> instance)
         {
             return RegistrationHelper<T>(
-				registrationCallback(),
+                registrationCallback(),
                 createRegistration([instance](Container &r) { return instance; })
                 );
         }
@@ -74,6 +75,7 @@ namespace DIContainer
 
         std::shared_ptr<Container> build()
         {            
+            std::lock_guard<std::mutex> lock(registrationMutex);
             auto container = std::make_shared<Container>();
             
             CopyHelper copyManager;
@@ -90,20 +92,22 @@ namespace DIContainer
     private:
 
         bool duplicateCheck = false;
+        std::mutex registrationMutex;
 
-		std::function < void(std::shared_ptr<IService>, std::shared_ptr<RegistrationData> ) > registrationCallback()
-		{
-			return[this](
-				std::shared_ptr<IService> registrationInfo,
-				std::shared_ptr<RegistrationData> registrationData)
-			{
-				RegistrationKey key(registrationInfo);
+        std::function < void(std::shared_ptr<IService>, std::shared_ptr<RegistrationData> ) > registrationCallback()
+        {
+            return[this](
+                std::shared_ptr<IService> registrationInfo,
+                std::shared_ptr<RegistrationData> registrationData)
+            {
+                std::lock_guard<std::mutex> lock(registrationMutex);
+                RegistrationKey key(registrationInfo);
 
-				if (dependencies.count(key) > 0 && duplicateCheck)
-					throw DuplicateDependencyException();
-				dependencies[RegistrationKey(registrationInfo)] = registrationData;
-			};			
-		}
+                if (dependencies.count(key) > 0 && duplicateCheck)
+                    throw DuplicateDependencyException();
+                dependencies[RegistrationKey(registrationInfo)] = registrationData;
+            };			
+        }
 
         std::shared_ptr<RegistrationData> createRegistration(
             RegistrationData::UntypedFactory creator
