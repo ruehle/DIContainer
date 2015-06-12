@@ -197,7 +197,7 @@ TEST(DIContainerTests, ResolveImplementationWithDependencyByCode_Succeeds)
     builder.registerType<ServiceImplementation>()
         .as<IMyService>();
 
-    auto create = [](Container &r){
+    auto create = [](IComponentContext &r){
         return std::make_shared<DependentServiceImplementation>(
             r.resolve<IMyService>()
             ); };

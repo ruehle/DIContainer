@@ -37,7 +37,7 @@ namespace DIContainer
         RegistrationHelper<T> registerType()
         {
             auto registration = createRegistration(
-                [](Container &r) { return std::make_shared<T>(); }
+                [](IComponentContext &r) { return std::make_shared<T>(); }
             );
 
             return RegistrationHelper<T>(
@@ -46,7 +46,7 @@ namespace DIContainer
         }
 
         template<class T>
-        RegistrationHelper<T> registerType(std::function< std::shared_ptr<T>(Container &)> creator)
+        RegistrationHelper<T> registerType(std::function< std::shared_ptr<T>(IComponentContext &)> creator)
         {
             return RegistrationHelper<T>(
                 registrationCallback(),
@@ -58,7 +58,7 @@ namespace DIContainer
         {
             return RegistrationHelper<T>(
                 registrationCallback(),
-                createRegistration([injector](Container &r) { return injector.template create<T>(r); })
+                createRegistration([injector](IComponentContext &r) { return injector.template create<T>(r); })
                 );
         }
 
@@ -67,7 +67,7 @@ namespace DIContainer
         {
             return RegistrationHelper<T>(
                 registrationCallback(),
-                createRegistration([instance](Container &r) { return instance; })
+                createRegistration([instance](IComponentContext &r) { return instance; })
                 );
         }
 

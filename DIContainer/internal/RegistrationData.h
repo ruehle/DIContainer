@@ -6,7 +6,7 @@
 
 namespace DIContainer
 {
-    class Container;
+    class IComponentContext;
 
     enum class LifetimeScope
     {
@@ -18,7 +18,7 @@ namespace DIContainer
     {
     public:
 
-        using UntypedFactory = std::function<std::shared_ptr<void>(Container &)>;
+        using UntypedFactory = std::function<std::shared_ptr<void>(IComponentContext &)>;
 
         explicit RegistrationData
             (UntypedFactory factory, 
@@ -27,7 +27,7 @@ namespace DIContainer
 
         RegistrationData(const RegistrationData &) = delete;
 
-        std::shared_ptr<void> build(Container &r)
+        std::shared_ptr<void> build(IComponentContext &r)
         {
             if ( lifetime ==LifetimeScope::PerDependency )
             {

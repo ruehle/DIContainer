@@ -42,5 +42,8 @@
     <ClInclude Include="internal\KeyedService.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IComponentContext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

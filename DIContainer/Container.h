@@ -5,8 +5,7 @@
 #include <unordered_map>
 #include "internal/RegistrationData.h"
 #include "internal/RegistrationKey.h"
-#include "internal/TypedService.h"
-#include "internal/KeyedService.h"
+#include "IComponentContext.h"
 
 
 namespace DIContainer
@@ -26,31 +25,11 @@ namespace DIContainer
     /// All dependencies are resolved at the Container. The container is created
     /// and configured using the ContainerBuilder
     ///
-    class Container
+    class Container : public IComponentContext
     {
     public:
 
         Container() {}
-
-        template<class T>
-        std::shared_ptr<T> resolve()
-        {
-            auto &registarion = lookupRegistration(TypedService<T>());
-            return std::static_pointer_cast<T>(registarion.build(*this));
-        }
-
-        template<class T, class KeyType>
-        std::shared_ptr<T> resolveKeyed(const KeyType &key)
-        {
-            auto &registarion = lookupRegistration(KeyedService<T, KeyType>(key));
-            return std::static_pointer_cast<T>(registarion.build(*this));
-        }
-
-        template<class T>
-        std::shared_ptr<T> resolveNamed(const std::string &name)
-        {
-            return resolveKeyed<T>(name);
-        }
 
     private:
 
@@ -67,6 +46,11 @@ namespace DIContainer
             return *iter->second;
         }
 
+        virtual std::shared_ptr< void > resolveService(const IService & service)
+        {
+            auto &registarion = lookupRegistration(service);
+            return registarion.build(*this);
+        }
 
         friend class ContainerBuilder;
     };

@@ -17,7 +17,7 @@ namespace DIContainer
     {
     public:
         template<class T>
-        std::shared_ptr<T> create(Container &r) const
+        std::shared_ptr<T> create(IComponentContext &r) const
         {
             return std::make_shared<T>(r.resolve<Args>()...);
         }
