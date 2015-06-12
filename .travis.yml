@@ -5,8 +5,10 @@ compiler:
   - gcc
  
 before_install:
- - sudo apt-get update
- 
+  - sudo apt-get update
+  - mkdir build
+  - cd build
+  - cmake ..
 script:
-  - cmake --build
+  - make
   - ./DIContainer.Tests
