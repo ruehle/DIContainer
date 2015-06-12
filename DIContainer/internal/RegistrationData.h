@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <functional>
+#include <mutex>
 
 namespace DIContainer
 {
@@ -19,8 +20,12 @@ namespace DIContainer
 
         using UntypedFactory = std::function<std::shared_ptr<void>(Container &)>;
 
-        explicit RegistrationData(UntypedFactory factory)
-            : factory(factory) {}
+        explicit RegistrationData
+            (UntypedFactory factory, 
+            LifetimeScope lifetime = LifetimeScope::PerDependency)
+            : factory(factory), lifetime(lifetime) {}
+
+        RegistrationData(const RegistrationData &) = delete;
 
         std::shared_ptr<void> build(Container &r)
         {
@@ -28,6 +33,7 @@ namespace DIContainer
             {
                 return factory(r);
             }
+            //std::lock_guard<std::mutex> lock(sharedInstanceMutex);
             if (!instanceIfShared)
                 instanceIfShared = factory(r);
 
@@ -39,9 +45,14 @@ namespace DIContainer
             this->lifetime = lifetime;
         }
 
+        std::shared_ptr<RegistrationData> copy()
+        {
+            return std::make_shared<RegistrationData>(factory, lifetime);
+        }
     private:
         LifetimeScope lifetime = LifetimeScope::PerDependency;
         std::shared_ptr<void> instanceIfShared;
+        std::mutex sharedInstanceMutex;
 
         UntypedFactory factory;       
     };

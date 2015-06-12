@@ -132,8 +132,8 @@ namespace DIContainer
                 auto exists = copiedInstances.find(registration);
                 if (exists == copiedInstances.end())
                 {
-                    auto copy = std::make_shared<RegistrationData>(*registration);
-                    copiedInstances.insert( std::make_pair(registration,  copy) );
+                    auto copy = registration->copy();
+                    copiedInstances.insert( std::make_pair(registration, copy) );
                     return copy;
                 }
                 auto item = exists->second;
