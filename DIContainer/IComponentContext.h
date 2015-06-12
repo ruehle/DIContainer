@@ -2,6 +2,8 @@
 
 #include <memory>
 #include "internal/IService.h"
+#include "internal/TypedService.h"
+#include "internal/KeyedService.h"
 
 namespace DIContainer
 {
