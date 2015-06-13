@@ -40,7 +40,6 @@ namespace {
 
 TEST(DIContainerTests, ResolveUnregisteredDependency_TrowsUnresolvedDependencyException)
 {
-	FAIL();
     ContainerBuilder builder;
     auto resolver = builder.build();
     ASSERT_THROW(resolver->resolve<IMyService>(), UnresolvedDependencyException);
