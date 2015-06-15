@@ -26,6 +26,7 @@ namespace DIContainer
             : factory(factory), lifetime(lifetime) {}
 
         RegistrationData(const RegistrationData &) = delete;
+        RegistrationData &operator=(const RegistrationData &) = delete;
 
         std::shared_ptr<void> build(IComponentContext &r)
         {

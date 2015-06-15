@@ -32,6 +32,8 @@ namespace DIContainer
         }
 
     private:
+        RegistrationKey operator=(const RegistrationKey &) = delete;
+
         explicit RegistrationKey(const IService &info)
             : info(info) {}
 

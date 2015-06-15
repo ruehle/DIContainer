@@ -32,12 +32,15 @@ namespace DIContainer
     class ContainerBuilder
     {
     public:
+        ContainerBuilder() = default;
+        ContainerBuilder(const ContainerBuilder &builder) = delete;
+        ContainerBuilder &operator=(const ContainerBuilder &builder) = delete;
 
         template<class T>
         RegistrationHelper<T> registerType()
         {
             auto registration = createRegistration(
-                [](IComponentContext &r) { return std::make_shared<T>(); }
+                [](IComponentContext &) { return std::make_shared<T>(); }
             );
 
             return RegistrationHelper<T>(
@@ -67,7 +70,7 @@ namespace DIContainer
         {
             return RegistrationHelper<T>(
                 registrationCallback(),
-                createRegistration([instance](IComponentContext &r) { return instance; })
+                createRegistration([instance](IComponentContext &) { return instance; })
                 );
         }
 
