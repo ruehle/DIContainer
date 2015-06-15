@@ -34,7 +34,7 @@ namespace DIContainer
             {
                 return factory(r);
             }
-            //std::lock_guard<std::mutex> lock(sharedInstanceMutex);
+            std::lock_guard<std::mutex> lock(sharedInstanceMutex);
             if (!instanceIfShared)
                 instanceIfShared = factory(r);
 
